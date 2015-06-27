@@ -24,7 +24,7 @@ boost::any ddc_read(const std::string &url,
                     base::ConfigurationMap& conf);
 }
 // [[Rcpp::export]]
-Rcpp::List ddc_read(const std::string& url,
+Rcpp::DataFrame ddc_read(const std::string& url,
                     const Rcpp::List& options)
 {
     base::ConfigurationMap conf;
@@ -83,9 +83,7 @@ Rcpp::List ddc_read(const std::string& url,
     boost::any df = ddc::ddc_read(url,
                                   "rdataframe",
                                   conf);
-    Rcpp::List l = *(boost::any_cast<boost::shared_ptr<Rcpp::List> >(df));
-    if(base::utils::getExtension(url) == "csv") return Rcpp::DataFrame(l);
-    else return l;
+    return *(boost::any_cast<boost::shared_ptr<Rcpp::DataFrame> >(df));
 }
 
 
