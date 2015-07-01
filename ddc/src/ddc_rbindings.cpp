@@ -80,6 +80,15 @@ Rcpp::DataFrame ddc_read(const std::string& url,
         //PASS
     }
 
+    std::string fileType = "";
+    try {
+        fileType =  Rcpp::as<std::string>(options["fileType"]);
+        conf["fileType"] = fileType;
+    }
+    catch(...) {
+        //PASS
+    }
+
     boost::any df = ddc::ddc_read(url,
                                   "rdataframe",
                                   conf);
