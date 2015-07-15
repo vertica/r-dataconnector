@@ -56,8 +56,18 @@ Rcpp::DataFrame ddc_read(const std::string& url,
         //PASS
     }
 
+    char delimiter = ',';
+    try {
+        delimiter =  Rcpp::as<char>(options["delimiter"]);
+    }
+    catch(...) {
+        //PASS
+    }
+    conf["delimiter"] = delimiter;
+
     std::string selectedStripesStr = "";
     try {
+        // TODO do this in ddc.cpp
         selectedStripesStr =  Rcpp::as<std::string>(options["selectedStripes"]);
         std::vector<std::string> selectedStripesStrings;
         boost::split(selectedStripesStrings, selectedStripesStr, boost::is_any_of(","));
