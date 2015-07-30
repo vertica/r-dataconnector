@@ -66,8 +66,8 @@ test_that("%s", {
 
 '''
 
-data_check_template = '''expect_%s(df[0,0], %s)
-expect_%s(df[%d,%d], %s)'''
+data_check_template = '''expect_%s(df[1,1], %s)
+expect_%s(%sdf[%d,%d]%s, %s)'''
 
 for f in files:
     out = '''library(ddc)
@@ -92,8 +92,10 @@ for f in files:
 'match',
 '"'+start_value+'"',
 'match',
+'as.character(',
 f['num_rows'],
 f['num_cols'],
+')',
 '"'+end_value+'"'
 )
         else:
@@ -101,8 +103,10 @@ f['num_cols'],
 'equal',
 start_value,
 'equal',
+'',
 f['num_rows'],
 f['num_cols'],
+'',
 end_value
 
 )
