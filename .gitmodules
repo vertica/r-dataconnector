@@ -1,3 +1,4 @@
 [submodule "ddc/src/distributed-data-connector"]
 	path = ddc/src/distributed-data-connector
-	url = http://git.verticacorp.com/scm/jm/distributed-data-connector.git
+	url = ssh://git@git.verticacorp.com:7999/jm/distributed-data-connector.git
+	branch = master
