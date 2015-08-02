@@ -112,6 +112,15 @@ Rcpp::DataFrame ddc_read(const std::string& url,
     }
     conf["delimiter"] = delimiter;
 
+    char commentCharacter = '#';
+    try {
+        commentCharacter =  Rcpp::as<char>(options["commentCharacter"]);
+    }
+    catch(...) {
+        //PASS
+    }
+    conf["commentCharacter"] = commentCharacter;
+
     std::string selectedStripesStr = "";
     try {
         // TODO do this in ddc.cpp
