@@ -2,7 +2,13 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 ddc_write <- function(object, url, ...) {
-    .Call('ddc_ddc_write', PACKAGE = 'ddc', object, url, list(...))
+    if (typeof(object) == 'character') {
+        .Call('ddc_ddc_write', PACKAGE = 'ddc', object, url, list(...))
+    }
+    else {
+        .Call('ddc_ddc_write', PACKAGE = 'ddc', serialize(object, NULL), url, list(...))
+    }
+
 }
 
 ddc_read <- function(url, ...) {
