@@ -1,0 +1,3 @@
+useDynLib(hdfsconnector)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
