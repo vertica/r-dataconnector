@@ -5,6 +5,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/any.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <Rcpp.h>
 
@@ -25,6 +26,42 @@ boost::any ddc_read(const std::string& url,
 void ddc_write(const std::string& url,
                const std::string& bytes,
                base::ConfigurationMap& conf);
+
+namespace scheduler {
+
+    class WorkerInfo {
+    public:
+        explicit WorkerInfo(const std::string& hostname,
+                            const uint64_t port,
+                            const uint64_t numExecutors)
+            : hostname_(hostname),
+              port_(port),
+              numExecutors_(numExecutors) {
+        }
+
+        std::string hostname() const {
+            return hostname_;
+        }
+        uint64_t port() const {
+            return port_;
+        }
+        uint64_t numExecutors() const {
+            return numExecutors_;
+        }
+
+    private:
+        std::string hostname_;
+        uint64_t port_;
+        uint64_t numExecutors_;
+    };
+
+    typedef std::map<int32_t, boost::shared_ptr<WorkerInfo> > WorkerMap;
+}
+
+Rcpp::List create_plan(const std::string& url,
+                       base::ConfigurationMap& options,
+                       const ddc::scheduler::WorkerMap& workerMap);
+
 }
 
 
@@ -70,16 +107,14 @@ SEXP ddc_write(SEXP object,
     return R_NilValue;
 }
 
-// [[Rcpp::export]]
-Rcpp::DataFrame ddc_read(const std::string& url,
-                         const Rcpp::List& options)
-{
+static base::ConfigurationMap list2conf(const Rcpp::List& options) {
     base::ConfigurationMap conf;
     //std::vector<uint64_t> offsets;
     std::string schema = "";
     try {
         schema =  Rcpp::as<std::string>(options["schema"]);
-        conf["schemaUrl"] = schema;
+        conf["schema"] = schema;
+        conf["schemaUrl"] = schema;  //TODO only 1 should be necessary
     }
     catch(...) {
         //PASS
@@ -154,6 +189,14 @@ Rcpp::DataFrame ddc_read(const std::string& url,
     catch(...) {
         //PASS
     }
+    return conf;
+}
+
+// [[Rcpp::export]]
+Rcpp::DataFrame ddc_read(const std::string& url,
+                         const Rcpp::List& options)
+{
+    base::ConfigurationMap conf = list2conf(options);
 
     boost::any df = ddc::ddc_read(url,
                                   "rdataframe",
@@ -161,4 +204,25 @@ Rcpp::DataFrame ddc_read(const std::string& url,
     return *(boost::any_cast<boost::shared_ptr<Rcpp::DataFrame> >(df));
 }
 
+// [[Rcpp::export]]
+Rcpp::List create_plan(const std::string& url,
+                       const Rcpp::List& options,
+                       const Rcpp::List& workerMapR) {
+
+    base::ConfigurationMap conf = list2conf(options);
+
+    // convert R workerMap into a c++ worker map
+    ddc::scheduler::WorkerMap workerMap;
+    for (uint64_t i = 0; i < workerMapR.size(); ++i) {
+        std::ostringstream os;
+        os << i;
+        Rcpp::List w = workerMapR[os.str()];
+        ddc::scheduler::WorkerInfo wi(w["hostname"],
+                                      w["port"],
+                                      w["num_executors"]);
+        workerMap[i] = boost::make_shared<ddc::scheduler::WorkerInfo>(wi);
+    }
+    Rcpp::List res = ddc::create_plan(url, conf, workerMap);
+    return res;
+}
 

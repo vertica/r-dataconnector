@@ -30,3 +30,16 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// create_plan
+Rcpp::List create_plan(const std::string& url, const Rcpp::List& options, const Rcpp::List& workerMap);
+RcppExport SEXP hdfsconnector_create_plan(SEXP urlSEXP, SEXP optionsSEXP, SEXP workerMapSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const std::string& >::type url(urlSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type options(optionsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type workerMap(workerMapSEXP);
+    __result = Rcpp::wrap(create_plan(url, options, workerMap));
+    return __result;
+END_RCPP
+}
