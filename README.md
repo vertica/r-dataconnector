@@ -9,6 +9,11 @@ Supported file systems:
 * HDFS
 * Local FS
 
+### Installation
+
+    $ git clone --recursive https://github.com/vertica/r-hdfsconnector.git 
+    $ R CMD INSTALL r-hdfsconnector/hdfsconnector
+
 ### Examples
     library(hdfsconnector)
 
