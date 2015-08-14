@@ -1,5 +1,5 @@
 ### Introduction
-Using the `hdfsconnector` package, R users can read CSV and ORC files from HDFS of the local file system. `hdfsconnector` is extensible and new file formats abd filesystems can be easily supported.
+Using the `hdfsconnector` package, R users can read CSV and ORC files from HDFS of the local file system. `hdfsconnector` is extensible and new file formats and filesystems can be easily supported.
 
 Supported formats:
 * CSV
