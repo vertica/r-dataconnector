@@ -1,0 +1,12 @@
+[submodule "ddc/hdfsutils/webhdfs"]
+	path = ddc/hdfsutils/webhdfs
+	url = https://github.com/jorgemarsal/webhdfs
+	branch = master
+[submodule "ddc/recordparser/orc"]
+	path = ddc/recordparser/orc
+	url = https://github.com/jorgemarsal/orc
+	branch = c++
+[submodule "ddc/recordparser/text-csv"]
+	path = ddc/recordparser/text-csv
+	url = https://github.com/jorgemarsal/text-csv
+	branch = master

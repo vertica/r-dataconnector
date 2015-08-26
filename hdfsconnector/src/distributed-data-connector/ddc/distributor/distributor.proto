@@ -1,0 +1,59 @@
+package ddc.distributor;
+
+message Registration {
+  required string id = 1;
+  repeated string ipAddress = 2;
+}
+
+message FetchSplitRequest {
+  required string tag = 1;
+  required string filename = 2;
+  required uint64 start = 3;
+  required uint64 end = 4;
+  required string schema = 5;
+  required string objectType = 6;
+}
+
+message FetchSplitResponse {
+  required string tag = 1;
+  required int32 status = 2;
+}
+
+message HeartBeatRequest {
+}
+
+message HeartBeatResponse {
+}
+
+message ShutdownRequest {
+}
+
+message ProgressUpdate {
+  required string tag = 1;
+  required uint64 bytesCompleted = 2;
+  required uint64 bytesTotal = 3;
+}
+
+message AnyRequest {
+  enum Type { REGISTRATION = 1;
+              FETCH_SPLIT_REQUEST = 2;
+              FETCH_SPLIT_RESPONSE = 3;
+              HEARTBEAT_REQUEST = 4;
+              HEARTBEAT_RESPONSE = 5;
+              SHUTDOWN_REQUEST = 6;
+              PROGRESS_UPDATE = 7;
+  }
+
+  // Identifies which field is filled in.
+  required Type type = 1;
+
+  // One of the following will be filled in.
+  optional Registration registration = 2;
+  optional FetchSplitRequest fetchSplitRequest = 3;
+  optional FetchSplitResponse fetchSplitResponse = 4;
+  optional HeartBeatRequest heartBeatRequest = 5;
+  optional HeartBeatResponse heartBeatResponse = 6;
+  optional ShutdownRequest shutdownRequest = 7;
+  optional ProgressUpdate progressUpdate = 8;
+}
+
