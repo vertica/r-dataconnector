@@ -1,4 +1,0 @@
-[submodule "hdfsconnector/src/distributed-data-connector"]
-	path = hdfsconnector/src/distributed-data-connector
-	url = https://github.com/vertica/distributed-data-connector.git
-	branch = master
