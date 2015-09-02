@@ -312,7 +312,15 @@ Rcpp::List create_plan(const std::string& url,
 
     std::string delimiter = ",";
     try {
-        delimiter = boost::any_cast<std::string>(options["delimiter"]);
+        delimiter = boost::any_cast<char>(options["delimiter"]);
+    }
+    catch(...) {
+        //PASS
+    }
+
+    std::string commentCharacter = "#";
+    try {
+        commentCharacter = boost::any_cast<char>(options["commentCharacter"]);
     }
     catch(...) {
         //PASS
@@ -344,6 +352,7 @@ Rcpp::List create_plan(const std::string& url,
                 rconf["schema"] = boost::any_cast<std::string>(planconf["schema"]);
                 rconf["file_type"] = std::string("csv");
                 rconf["delimiter"] = delimiter;
+                rconf["comment_character"] = commentCharacter;
                 rconf["url"] = boost::any_cast<std::string>(planconf["url"]);
             }
             catch(...) {
