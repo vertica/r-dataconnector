@@ -10,7 +10,7 @@ HdfsLocalityScheduler::HdfsLocalityScheduler() :
 }
 
 void HdfsLocalityScheduler::configure(base::ConfigurationMap &conf) {
-    hdfsBlockLocator_ = boost::any_cast<hdfsutils::HdfsBlockLocatorPtr>(conf["hdfsBlockLocator"]);
+    GET_PARAMETER(hdfsBlockLocator_, hdfsutils::HdfsBlockLocatorPtr, "hdfsBlockLocator");
     configured_ = true;
 }
 

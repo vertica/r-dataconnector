@@ -23,8 +23,8 @@
 
 
 //include R the last, otherwise overwrites a lot of stuff
-#include <R.h>
-#include <Rinternals.h>
+//#include <R.h>
+//#include <Rinternals.h>
 #include <Rcpp.h>
 
 namespace ddc {

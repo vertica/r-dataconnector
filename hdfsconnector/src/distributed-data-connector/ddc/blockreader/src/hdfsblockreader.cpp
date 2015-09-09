@@ -16,8 +16,8 @@ HdfsBlockReader::~HdfsBlockReader()
 
 void HdfsBlockReader::configure(base::ConfigurationMap &conf)
 {
-    filename_ = boost::any_cast<std::string>(conf["filename"]);
-    hdfsConfigurationFile_ = boost::any_cast<std::string>(conf["hdfsConfigurationFile"]);
+    GET_PARAMETER(filename_, std::string, "filename");
+    GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
 
     hdfsutils::HdfsFile file(filename_);
     base::ConfigurationMap blockLocatorConf;

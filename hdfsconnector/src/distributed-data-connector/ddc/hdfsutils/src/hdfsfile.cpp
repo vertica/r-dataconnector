@@ -13,22 +13,15 @@ HdfsFile::HdfsFile(const std::string& filename)
     filename_ = filename;
 }
 
-void HdfsFile::configure(base::ConfigurationMap &conf) {
-    try {
-        hdfsConfigurationFile_ = boost::any_cast<std::string>(conf["hdfsConfigurationFile"]);
-    }
-    catch (...) {
-        std::ostringstream os;
-        os << "Need to specify hdfsConfigurationFile in options";
-        LOG(ERROR) << os.str();
-        throw std::runtime_error(os.str());
-    }
+void HdfsFile::configure(base::ConfigurationMap &conf) {    
+    GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
 
     try {
         overwrite_ = boost::any_cast<bool>(conf["overwrite"]);
     }
     catch(...) {
         // PASS
+        //LOG(INFO) << "overwrite not specified. Defaulting to false";
     }
 
     /* Setup webhdfs config */

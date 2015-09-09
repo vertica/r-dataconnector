@@ -32,15 +32,12 @@ DelimiterSplitProducer::~DelimiterSplitProducer()
 
 void DelimiterSplitProducer::configure(base::ConfigurationMap& conf)
 {
-    using boost::any_cast;
-
-    fileEnd_ = any_cast<uint64_t>(conf["fileEnd"]);
-    splitEnd_ = any_cast<uint64_t>(conf["splitEnd"]);
-    blockReader_ = any_cast<blockreader::IBlockReaderPtr>(conf["blockReader"]);
+    GET_PARAMETER(fileEnd_,uint64_t,"fileEnd");
+    GET_PARAMETER(splitEnd_,uint64_t,"splitEnd");
+    GET_PARAMETER(blockReader_,blockreader::IBlockReaderPtr,"blockReader");
     blockSize_ = blockReader_->blockSize();
-    offset_ = any_cast<uint64_t>(conf["splitStart"]);
-    delimiter_ = any_cast<uint8_t>(conf["delimiter"]);
-    offset_ = any_cast<uint64_t>(conf["splitStart"]);
+    GET_PARAMETER(offset_,uint64_t,"splitStart");
+    GET_PARAMETER(delimiter_,uint8_t,"delimiter");
 
     if(offset_ > 0) {
         if(block_) block_.reset(); //discard old block if it exists

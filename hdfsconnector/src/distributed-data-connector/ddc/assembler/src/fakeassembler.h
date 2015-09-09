@@ -6,16 +6,11 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <boost/variant.hpp>
-#include <Rcpp.h>
+
 #include "iassembler.h"
 
 namespace ddc {
 namespace assembler {
-
-typedef boost::variant<IntegerVectorPtr,
-                       CharacterVectorPtr,
-                       DoubleVectorPtr,
-                       SEXP> AnyVector;
 
 class FakeAssembler: public IAssembler
 {

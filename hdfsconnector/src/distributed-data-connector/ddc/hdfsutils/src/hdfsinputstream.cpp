@@ -19,7 +19,7 @@ HdfsInputStream::~HdfsInputStream()
 
 void HdfsInputStream::configure(base::ConfigurationMap &conf) {
     base::ConfigurationMap hdfsconf;
-    hdfsConfigurationFile_ = boost::any_cast<std::string>(conf["hdfsConfigurationFile"]);
+    GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
     hdfsconf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
     hdfsFile_->configure(hdfsconf);
     stat_ = hdfsFile_->stat();

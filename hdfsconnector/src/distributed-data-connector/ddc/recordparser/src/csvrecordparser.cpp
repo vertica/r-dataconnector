@@ -23,10 +23,12 @@ CsvRecordParser::~CsvRecordParser()
 
 void CsvRecordParser::configure(base::ConfigurationMap &conf)
 {
-    splitProducer_ = boost::any_cast<splitproducer::ISplitProducerPtr>(conf["splitProducer"]);
-    schema_ = boost::any_cast<std::map<int32_t, std::pair<std::string,std::string> > >(conf["schema"]);
-    delimiter_ = boost::any_cast<char>(conf["delimiter"]);
-    commentCharacter_ = boost::any_cast<char>(conf["commentCharacter"]);
+    GET_PARAMETER(splitProducer_, splitproducer::ISplitProducerPtr, "splitProducer");
+    #define DDC_COMMA ,
+    GET_PARAMETER(schema_, std::map<int32_t DDC_COMMA std::pair<std::string DDC_COMMA std::string> > , "schema");
+    #undef DDC_COMMA
+    GET_PARAMETER(delimiter_, char, "delimiter");
+    GET_PARAMETER(commentCharacter_, char, "commentCharacter");
     configured_ = true;
 }
 

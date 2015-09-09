@@ -28,7 +28,7 @@ HdfsBlockLocator::~HdfsBlockLocator()
 }
 
 void HdfsBlockLocator::configure(base::ConfigurationMap &conf) {
-    hdfsConfigurationFile_ = boost::any_cast<std::string>(conf["hdfsConfigurationFile"]);
+    GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
     /* Setup webhdfs config */
     DLOG(INFO) << "Reading HDFS config: " << hdfsConfigurationFile_;
     conf_ = webhdfs_conf_load(hdfsConfigurationFile_.c_str());
@@ -42,8 +42,8 @@ void HdfsBlockLocator::configure(base::ConfigurationMap &conf) {
         throw std::runtime_error("error in webhdfs_connect");
     }
 
-    filename_ = boost::any_cast<std::string>(conf["filename"]);
-    hdfsConfigurationFile_ = boost::any_cast<std::string>(conf["hdfsConfigurationFile"]);
+    GET_PARAMETER(filename_, std::string, "filename");
+    GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
     configured_ = true;
 }
 

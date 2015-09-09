@@ -74,7 +74,7 @@ void getKinds(const orc::Type& type,
 
 void OrcRecordParser::configure(base::ConfigurationMap &conf)
 {
-    url_ = boost::any_cast<std::string>(conf["url"]);
+    GET_PARAMETER(url_, std::string, "url");
     std::string protocol = base::utils::getProtocol(url_);
 
     std::string filename;
@@ -90,7 +90,7 @@ void OrcRecordParser::configure(base::ConfigurationMap &conf)
     if(protocol == "hdfs" || protocol == "http" || protocol == "webhdfs") {
         hdfsutils::HdfsInputStream *p = new hdfsutils::HdfsInputStream(filename);
         base::ConfigurationMap hdfsconf;
-        hdfsconf["hdfsConfigurationFile"] = boost::any_cast<std::string>(conf["hdfsConfigurationFile"]);
+        GET_PARAMETER(hdfsconf["hdfsConfigurationFile"], std::string, "hdfsConfigurationFile");
         p->configure(hdfsconf);
         std::unique_ptr<orc::InputStream> inputStream(p);
         orcReader_ = orc::createReader(std::move(inputStream), opts);
@@ -100,7 +100,7 @@ void OrcRecordParser::configure(base::ConfigurationMap &conf)
     }
     numStripes_ = orcReader_->getNumberOfStripes();
 
-    selectedStripes_ = boost::any_cast<std::vector<uint64_t> >(conf["selectedStripes"]);
+    GET_PARAMETER(selectedStripes_, std::vector<uint64_t> , "selectedStripes");
     if (selectedStripes_.size() == 0) {
         // when no stripes are selected we read all of them
         for(uint64_t i = 0; i < numStripes_; ++i) {

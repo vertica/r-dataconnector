@@ -26,11 +26,10 @@ OffsetSplitProducer::~OffsetSplitProducer()
 
 void OffsetSplitProducer::configure(base::ConfigurationMap& conf)
 {
-    using boost::any_cast;
 
-    fileEnd_ = any_cast<uint64_t>(conf["fileEnd"]);
-    offsets_ = any_cast<std::vector<uint64_t> >(conf["offsets"]);
-    blockReader_ = any_cast<blockreader::IBlockReaderPtr>(conf["blockReader"]);
+    GET_PARAMETER(fileEnd_,uint64_t,"fileEnd");
+    GET_PARAMETER(offsets_ ,std::vector<uint64_t>,"offsets");
+    GET_PARAMETER(blockReader_,blockreader::IBlockReaderPtr,"blockReader");
     offsetIndex_ = 0;
     configured_ = true;
 

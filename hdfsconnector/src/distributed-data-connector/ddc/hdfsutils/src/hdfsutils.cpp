@@ -19,7 +19,8 @@ ddc::hdfsutils::HdfsGlobber::~HdfsGlobber() {
 
 void ddc::hdfsutils::HdfsGlobber::configure(base::ConfigurationMap &conf)
 {
-    std::string hdfsConfigurationFile = boost::any_cast<std::string>(conf["hdfsConfigurationFile"]);
+    std::string hdfsConfigurationFile;
+    GET_PARAMETER(hdfsConfigurationFile, std::string, "hdfsConfigurationFile");
 
     conf_ = webhdfs_conf_load(hdfsConfigurationFile.c_str());
     if(!conf_) {

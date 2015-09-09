@@ -16,14 +16,14 @@ ChunkScheduler::~ChunkScheduler()
 
 void ChunkScheduler::configure(base::ConfigurationMap &conf)
 {
-    workerMap_ = boost::any_cast<WorkerMap>(conf["workerMap"]);
-    fileUrl_ = boost::any_cast<std::string>(conf["fileUrl"]);
-    options_ = boost::any_cast<base::ConfigurationMap>(conf["options"]);
+    GET_PARAMETER(workerMap_, ddc::scheduler::WorkerMap, "workerMap");
+    GET_PARAMETER(fileUrl_, std::string, "fileUrl");
+    GET_PARAMETER(options_, base::ConfigurationMap, "options");
     std::string protocol = base::utils::getProtocol(fileUrl_);
     if (hdfsutils::isHdfs(protocol)) {
-        hdfsBlockLocator_ = boost::any_cast<hdfsutils::HdfsBlockLocatorPtr>(conf["hdfsBlockLocator"]);
+        GET_PARAMETER(hdfsBlockLocator_, hdfsutils::HdfsBlockLocatorPtr, "hdfsBlockLocator");
         base::ConfigurationMap hdfsConf;
-        hdfsConfigurationFile_ = boost::any_cast<std::string>(conf["hdfsConfigurationFile"]);
+        GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
         hdfsConf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
         hdfsConf["filename"] = base::utils::stripProtocol(fileUrl_);
         hdfsBlockLocator_->configure(hdfsConf);
@@ -76,25 +76,6 @@ Plan ChunkScheduler::schedule() {
 
         uint64_t numPartitions = numExecutors;
 
-#if 0
-        for(uint64_t i = 0; i < numPartitions; ++i) {
-            Chunk c;
-            c.id = i;
-            c.start = i * (status.length / numPartitions);
-            c.end = (i + 1) * (status.length / numPartitions);
-            assert(c.end <= status.length);
-            chunks.push_back(c);
-            base::ConfigurationMap conf;
-            conf["chunkStart"] = c.start;
-            conf["chunkEnd"] = c.end;
-            conf["schema"] = boost::any_cast<std::string>(options_["schema"]);
-            DLOG(INFO) << "Chunk: " << i <<
-                          " start: " << c.start <<
-                          " end: " << c.end <<
-                          " schema: " << boost::any_cast<std::string>(options_["schema"]);
-            configurations.push_back(conf);
-        }
-#else
         std::vector<std::string> files;
         if (hdfsutils::isHdfs(protocol)) {
             hdfsutils::HdfsGlobber globber;
@@ -110,7 +91,6 @@ Plan ChunkScheduler::schedule() {
             throw std::runtime_error("List of files to read is empty. Make sure the files exist.");
         }
         divide(numPartitions, files, protocol, chunks, configurations);
-#endif
     }
     else if (extension_ == "orc") {
         std::unique_ptr<orc::Reader> orcReader;
@@ -317,7 +297,16 @@ void ChunkScheduler::divide(const uint64_t numExecutors,
         base::ConfigurationMap conf;
         conf["chunkStart"] = (it->first).start;
         conf["chunkEnd"] = (it->first).end;
-        conf["schema"] = boost::any_cast<std::string>(options_["schema"]);
+
+        try {
+            conf["schema"] = boost::any_cast<std::string>(options_["schema"]);
+        }
+        catch(boost::bad_any_cast& e) {
+            std::ostringstream os;
+            os << "Configuration error. Parameter schema is missing or invalid.";
+            throw std::runtime_error(os.str());
+        }
+
         conf["url"] = fullProtocol + (it->first).filename;
         configurations.push_back(conf);
         chunks.push_back(it->first);

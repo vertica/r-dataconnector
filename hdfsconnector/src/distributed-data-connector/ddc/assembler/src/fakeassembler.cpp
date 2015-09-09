@@ -11,6 +11,11 @@
 namespace ddc {
 namespace assembler {
 
+typedef boost::variant<IntegerVectorPtr,
+                       CharacterVectorPtr,
+                       DoubleVectorPtr,
+                       SEXP> AnyVector;
+
 
 FakeAssembler::FakeAssembler() : index_(0), configured_(false)
 {
@@ -24,8 +29,8 @@ FakeAssembler::~FakeAssembler()
 
 void FakeAssembler::configure(base::ConfigurationMap &conf)
 {
-    recordParser_ = boost::any_cast<recordparser::IRecordParserPtr>(conf["recordParser"]);
-    format_ = boost::any_cast<std::string>(conf["format"]);
+    GET_PARAMETER(recordParser_, recordparser::IRecordParserPtr, "recordParser");
+    GET_PARAMETER(format_, std::string, "format");
     if(format_ != "row" && format_ != "column") {
         throw std::runtime_error("format needs to be row or column");
     }
@@ -44,6 +49,7 @@ static void handleVectors(AnyVector &v, boost::any& value) {
             }
             catch(boost::bad_any_cast& e) {
                 LOG(ERROR) << "error casting int64_t";
+                throw;
             }
 
             break;
@@ -56,6 +62,7 @@ static void handleVectors(AnyVector &v, boost::any& value) {
             }
             catch(boost::bad_any_cast& e) {
                 LOG(ERROR) << "error casting string";
+                throw;
             }
             break;
         }
@@ -68,6 +75,7 @@ static void handleVectors(AnyVector &v, boost::any& value) {
             }
             catch(boost::bad_any_cast& e) {
                 LOG(ERROR) << "error casting double";
+                throw;
             }
             break;
         }

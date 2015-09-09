@@ -18,10 +18,9 @@ LocalBlockReader::~LocalBlockReader()
 
 void LocalBlockReader::configure(base::ConfigurationMap &conf)
 {
-    using boost::any_cast;
-    blockSize_ = any_cast<uint64_t>(conf["blocksize"]);
-
-    filename_ = any_cast<std::string>(conf["filename"]);
+    GET_PARAMETER(blockSize_, uint64_t, "blocksize");
+    GET_PARAMETER(filename_, std::string, "filename");
+    GET_PARAMETER(filename_, std::string, "filename");
     f_ = base::ScopedFilePtr(new base::ScopedFile(filename_));
     configured_ = true;
 }

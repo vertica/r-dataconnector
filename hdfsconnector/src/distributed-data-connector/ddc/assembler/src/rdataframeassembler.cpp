@@ -22,7 +22,7 @@ RDataFrameAssembler::~RDataFrameAssembler()
 
 void RDataFrameAssembler::configure(base::ConfigurationMap &conf)
 {
-    url_ = boost::any_cast<std::string>(conf["url"]);
+    GET_PARAMETER(url_, std::string, "url");
 
     // Override extension
     base::ConfigurationMap::iterator it = conf.find("fileType");
@@ -35,20 +35,22 @@ void RDataFrameAssembler::configure(base::ConfigurationMap &conf)
 
     std::string protocol = base::utils::getProtocol(url_);
     if (hdfsutils::isHdfs(protocol)) {
-        hdfsConfigurationFile_ = boost::any_cast<std::string>(conf["hdfsConfigurationFile"]);
+        GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
     }
 
-    recordParser_ = boost::any_cast<recordparser::IRecordParserPtr>(conf["recordParser"]);
+    GET_PARAMETER(recordParser_, recordparser::IRecordParserPtr, "recordParser");
 
     if(extension_ == "orc") {
         configureOrc();
     }
     else {
         // we use this for CSV, but not for ORC
-        schema_ = boost::any_cast<std::map<int32_t, std::pair<std::string, std::string> > >(conf["schema"]);
+        #define DDC_COMMA ,
+        GET_PARAMETER(schema_, std::map<int32_t DDC_COMMA std::pair<std::string DDC_COMMA std::string> > , "schema");
+        #undef DDC_COMMA
     }
 
-    format_ = boost::any_cast<std::string>(conf["format"]);
+    GET_PARAMETER(format_, std::string, "format");
     if(format_ != "row" && format_ != "column") {
         throw std::runtime_error("format needs to be row or column");
     }
@@ -923,7 +925,8 @@ void RDataFrameAssembler::update(int32_t level)
                 os << "CSV Row (" << (totalRowsProcessed_ + 1) <<
                       ") has less records (" << colIndex_ <<
                       ") than the number "
-                      "specified in the schema (" << schema_.size() << ").";
+                      "specified in the schema (" << schema_.size() << ")." <<
+                      " Also make sure the delimiter is correct.";
                 throw std::runtime_error(os.str());
             }
         }

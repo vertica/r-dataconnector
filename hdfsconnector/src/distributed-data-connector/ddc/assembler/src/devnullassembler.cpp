@@ -2,7 +2,6 @@
 #include <stdexcept>
 #include <utility>
 #include <boost/shared_ptr.hpp>
-#include <Rcpp.h>
 #include "recordparser/recordparserfactory.h"
 #include "base/utils.h"
 
@@ -22,7 +21,7 @@ DevNullAssembler::~DevNullAssembler()
 
 void DevNullAssembler::configure(base::ConfigurationMap &conf)
 {
-    recordParser_ = boost::any_cast<recordparser::IRecordParserPtr>(conf["recordParser"]);
+    GET_PARAMETER(recordParser_, recordparser::IRecordParserPtr, "recordParser");
     configured_ = true;
 
 }
@@ -45,7 +44,6 @@ boost::any DevNullAssembler::getObject()
         values->push_back(value);
 
     }
-    //Rcpp::DataFrame df;
     return boost::any(values);
 
 }

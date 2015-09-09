@@ -9,8 +9,6 @@
 #include "base/iobserver.h"
 #include "recordparser/irecordparser.h"
 
-#include "Rcpp.h"
-
 namespace ddc {
 namespace assembler {
 
