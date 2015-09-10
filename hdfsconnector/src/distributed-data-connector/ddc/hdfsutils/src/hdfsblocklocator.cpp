@@ -59,18 +59,28 @@ std::string HdfsBlockLocator::getHdfsBlockJson(const std::string &path) {
 
     webhdfs_req_open(&req, fs_, path.c_str());
     webhdfs_req_set_args(&req, "op=GET_BLOCK_LOCATIONS");
-    webhdfs_req_exec(&req, WEBHDFS_REQ_GET);
-    if(req.rcode != 200) { //TODO magic number
-        throw std::runtime_error("error in webhdfs_req_exec");
-    }
+    char *error = NULL;
+    webhdfs_req_exec(&req, WEBHDFS_REQ_GET, &error);
+//    if(req.rcode != 200) { //TODO magic number
+//        throw std::runtime_error("error in webhdfs_req_exec");
+//    }
     if((root = webhdfs_req_json_response(&req)) == 0) {
         throw std::runtime_error("error in webhdfs_req_json_response");
     }
 
     //check for webhdfs exception
     if ((v = webhdfs_response_exception(root)) != NULL) {
+        // get exception message
+        const char *messageNode[] = {"message", NULL};
+        yajl_val message;
+        if ((message = yajl_tree_get(v, messageNode, yajl_t_string)) == NULL) {
+            yajl_tree_free(root);
+            throw std::runtime_error("Error parsing JSON exception");
+        }
+
+        std::string errorStr(YAJL_GET_STRING(message));
         yajl_tree_free(root);
-        throw std::runtime_error("webhdfs exception");
+        throw std::runtime_error(errorStr);
     }
 
     std::string json = std::string((const char*)req.buffer.blob, req.buffer.size);
@@ -294,7 +304,8 @@ std::vector<std::string> HdfsBlockLocator::getUrls(const HdfsBlockRange &block) 
     for(uint64_t i = 0; i < sortedDatanodes.size(); i++) {
         //http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=OPEN[&offset=<LONG>][&length=<LONG>][&buffersize=<INT>]
         std::string url = "http://" + sortedDatanodes[i] + ":50075/webhdfs/v1" + filename_ +
-                "?op=OPEN&namenoderpcaddress=" + namenodeIpAddr + ":" + base::utils::to_string(conf->hdfs_port) + "&offset=" +
+                "?op=OPEN&namenoderpcaddress=" + namenodeIpAddr + ":" + base::utils::to_string(conf->hdfs_port) +
+                "&user.name=" + std::string(conf->hdfs_user) + "&offset=" +
                 base::utils::to_string(block.range.start) + "&length=" + base::utils::to_string(block.range.end - block.range.start);
         urls.push_back(url);
     }
