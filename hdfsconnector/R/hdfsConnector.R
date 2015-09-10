@@ -3,16 +3,35 @@
 
 csv2dataframe <- function(url, ...) {
     options = list(...)
+
+    if(!("hdfsConfigurationFile" %in% options)) {
+        # set default hdfsConfigurationFile
+        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
+    }
+
     options['fileType'] = 'csv'
     ddc_read(url, options)
 }
 
 orc2dataframe <- function(url, ...) {
     options = list(...)
+
+    if(!("hdfsConfigurationFile" %in% options)) {
+        # set default hdfsConfigurationFile
+        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
+    }
+
     options['fileType'] = 'orc'
     ddc_read(url, options)
 }
 
 object2hdfs <- function(object, url, ...) {
-    ddc_write(object, url, list(...))
+    options = list(...)
+
+    if(!("hdfsConfigurationFile" %in% options)) {
+        # set default hdfsConfigurationFile
+        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
+    }
+
+    ddc_write(object, url, options)
 }
