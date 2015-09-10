@@ -61,6 +61,7 @@ std::string HdfsBlockLocator::getHdfsBlockJson(const std::string &path) {
     webhdfs_req_set_args(&req, "op=GET_BLOCK_LOCATIONS");
     char *error = NULL;
     webhdfs_req_exec(&req, WEBHDFS_REQ_GET, &error);
+    if (error) free(error);
 //    if(req.rcode != 200) { //TODO magic number
 //        throw std::runtime_error("error in webhdfs_req_exec");
 //    }
