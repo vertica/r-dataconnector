@@ -108,9 +108,14 @@ base::FileStatus HdfsFile::stat()
     if(!configured_) {
         throw std::runtime_error("Need to configure first");
     }
-    webhdfs_fstat_t *stat = webhdfs_stat(fs_, filename_.c_str());
+    char *error = NULL;
+    webhdfs_fstat_t *stat = webhdfs_stat(fs_, filename_.c_str(), &error);
     if(stat == NULL) {
-        throw std::runtime_error("error in webhdfs_stat");
+        std::string errorStr(error);
+        if (error) {
+            free(error);
+        }
+        throw std::runtime_error(errorStr);
     }
     base::FileStatus s;
     s.blockSize = stat->block;

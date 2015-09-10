@@ -57,11 +57,14 @@ std::string ddc::hdfsutils::HdfsGlobber::getRoot(const std::string& path) {
 
 bool ddc::hdfsutils::HdfsGlobber::isFile(const std::string& path) {
 
-
-    webhdfs_fstat *stat = webhdfs_stat(fs_, path.c_str());
+    char *error = NULL;
+    webhdfs_fstat *stat = webhdfs_stat(fs_, path.c_str(), &error);
     if (stat == NULL) {
-        LOG(ERROR) << "Error in webhdfs_stat for " << path;
-        throw std::runtime_error("Error in webhdfs_stat");
+        std::string errorStr(error);
+        if (error) {
+            free(error);
+        }
+        throw std::runtime_error(errorStr);
     }
     bool isFile = std::string(stat->type) != std::string("DIRECTORY");   //enum {FILE, DIRECTORY, SYMLINK}
     return isFile;
