@@ -52,6 +52,16 @@ public:
 private:
 };
 
+class HttpException: public std::runtime_error {
+public:
+    explicit HttpException(const std::string &what): std::runtime_error(what) {
+
+    }
+
+
+private:
+};
+
 class CurlLowSpeedException: public CurlException {
 public:
     explicit CurlLowSpeedException(const std::string &what): CurlException(what) {

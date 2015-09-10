@@ -27,6 +27,9 @@ int FailoverUrlDownloader::download(const std::vector<std::string> &urls, const 
         catch (CurlAbortedByCallbackException& e) {
             throw std::runtime_error("User cancelled operation. Exiting ...");
         }
+        catch (HttpException& e) {
+            throw;
+        }
         catch(std::runtime_error &e) {
             //logDebug ...
             failedUrls_.push_back(urls[i]);
@@ -63,6 +66,10 @@ int FailoverUrlDownloader::downloadWithRetries(const std::string &url, const Spe
             retries--;
             numFailures_++;
         }
+        catch(HttpException& e) {
+            throw;
+        }
+
     }
     throw std::runtime_error("Unable to dl after retries");
 

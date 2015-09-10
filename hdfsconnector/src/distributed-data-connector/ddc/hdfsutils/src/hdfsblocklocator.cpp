@@ -214,7 +214,34 @@ BufferPtr HdfsBlockLocator::getBlock(const uint64_t blockStart, const uint64_t n
         BufferPtr blockBuffer(new std::vector<uint8_t>());
         blockBuffer->reserve(std::min(blockSize, numBytes));
         hdfsutils::FailoverUrlDownloader urlDownloader;
-        urlDownloader.download(urls, blockBuffer);
+        try {
+            urlDownloader.download(urls, blockBuffer);
+        }
+        catch(HttpException& e) {
+            char err[1024];
+            yajl_val node,v;
+            const char *exceptionMessage = e.what();
+            // parse JSON
+            if ((node = yajl_tree_parse(exceptionMessage, err, sizeof(err))) == NULL) {
+                throw std::runtime_error("Error parsing JSON exception");
+            }
+            // get exception node
+            if ((v = webhdfs_response_exception(node)) == NULL){
+                yajl_tree_free(node);
+                throw std::runtime_error("Error parsing JSON exception");
+            }
+            // get exception message
+            const char *messageNode[] = {"message", NULL};
+            yajl_val message;
+            if ((message = yajl_tree_get(v, messageNode, yajl_t_string)) == NULL) {
+                yajl_tree_free(node);
+                throw std::runtime_error("Error parsing JSON exception");
+            }
+
+            std::string errorStr(YAJL_GET_STRING(message));
+            yajl_tree_free(node);
+            throw std::runtime_error(errorStr);
+        }
         buffer->insert(buffer->end(),blockBuffer->begin(), blockBuffer->end());
     }
     return buffer;

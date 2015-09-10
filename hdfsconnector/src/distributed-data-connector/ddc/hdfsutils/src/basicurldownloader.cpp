@@ -194,6 +194,17 @@ int BasicUrlDownloader::downloadSpeedLimit(const std::string &url, long lowSpeed
         }
     }
 
+    long httpCode;
+    CURLcode res2 = curl_easy_getinfo(curl_, CURLINFO_RESPONSE_CODE, &httpCode);
+    if(res2 != CURLE_OK) {
+        throw CurlException(curl_easy_strerror(res));
+    }
+
+    if (httpCode != 200) {
+        std::string error(buffer->begin(), buffer->end());
+        throw HttpException(error);
+    }
+
     /* always cleanup */
 
   }
