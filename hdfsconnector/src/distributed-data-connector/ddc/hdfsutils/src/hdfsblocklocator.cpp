@@ -31,9 +31,15 @@ void HdfsBlockLocator::configure(base::ConfigurationMap &conf) {
     GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
     /* Setup webhdfs config */
     DLOG(INFO) << "Reading HDFS config: " << hdfsConfigurationFile_;
-    conf_ = webhdfs_conf_load(hdfsConfigurationFile_.c_str());
+    char *error = NULL;
+    conf_ = webhdfs_conf_load(hdfsConfigurationFile_.c_str(), &error);
     if(!conf_) {
-        throw std::runtime_error("error reading hdfs config");
+        std::string errorStr("error reading hdfs config");
+        if (error) {
+            errorStr = std::string(error);
+            free(error);
+        }
+        throw std::runtime_error(errorStr);
     }
 
     /* Connect to WebHDFS */

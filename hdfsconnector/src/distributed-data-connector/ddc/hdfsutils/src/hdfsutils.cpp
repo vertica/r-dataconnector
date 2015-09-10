@@ -22,9 +22,15 @@ void ddc::hdfsutils::HdfsGlobber::configure(base::ConfigurationMap &conf)
     std::string hdfsConfigurationFile;
     GET_PARAMETER(hdfsConfigurationFile, std::string, "hdfsConfigurationFile");
 
-    conf_ = webhdfs_conf_load(hdfsConfigurationFile.c_str());
+    char *error = NULL;
+    conf_ = webhdfs_conf_load(hdfsConfigurationFile.c_str(), &error);
     if(!conf_) {
-        throw std::runtime_error("error reading hdfs config");
+        std::string errorStr("error reading hdfs config");
+        if (error) {
+            errorStr = std::string(error);
+            free(error);
+        }
+        throw std::runtime_error(errorStr);
     }
 
     /* Connect to WebHDFS */
