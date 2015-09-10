@@ -148,8 +148,8 @@ Plan ChunkScheduler::schedule() {
     workerChunksMap_ = _map;
     chunkWorkerMap_ = _map2;
 
-    LOG(INFO) << "Worker -> Chunk map: " << workerChunksMap_;
-    LOG(INFO) << "Chunk -> Worker map: " << chunkWorkerMap_;
+    DLOG(INFO) << "Worker -> Chunk map: " << workerChunksMap_;
+    DLOG(INFO) << "Chunk -> Worker map: " << chunkWorkerMap_;
     plan.numSplits = chunkWorkerMap_.size();
     plan.configurations = configurations;
 

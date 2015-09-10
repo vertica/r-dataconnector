@@ -50,7 +50,6 @@ std::string ddc::hdfsutils::HdfsGlobber::getRoot(const std::string& path) {
     }
     // move to the
     std::string s = path.substr(0, pos + 1);
-    LOG(INFO) << s;
     const char* root = dirname((char *)(s.c_str()));
     return std::string(root);
 }

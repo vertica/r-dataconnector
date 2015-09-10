@@ -855,7 +855,7 @@ boost::any RDataFrameAssembler::getObject()
                 break;  // split is empty. Do not abort, we just generate an empty DF
             }
             catch(const std::runtime_error& e) {
-                LOG(ERROR) << e.what();
+                //LOG(ERROR) << e.what();
                 throw;
             }
 
