@@ -284,10 +284,11 @@ std::vector<std::string> HdfsBlockLocator::getUrls(const HdfsBlockRange &block) 
     if(!conf) {
         throw std::runtime_error("conf is null");
     }
-    std::string namenodeIpAddr = std::string(conf->host);
+    std::string namenodeIpAddr = std::string(conf->hdfs_host);
     for(uint64_t i = 0; i < sortedDatanodes.size(); i++) {
         //http://<HOST>:<PORT>/webhdfs/v1/<PATH>?op=OPEN[&offset=<LONG>][&length=<LONG>][&buffersize=<INT>]
-        std::string url = "http://" + sortedDatanodes[i] + ":50075/webhdfs/v1" + filename_ + "?op=OPEN&namenoderpcaddress=" + namenodeIpAddr + ":9000&offset=" +
+        std::string url = "http://" + sortedDatanodes[i] + ":50075/webhdfs/v1" + filename_ +
+                "?op=OPEN&namenoderpcaddress=" + namenodeIpAddr + ":" + base::utils::to_string(conf->hdfs_port) + "&offset=" +
                 base::utils::to_string(block.range.start) + "&length=" + base::utils::to_string(block.range.end - block.range.start);
         urls.push_back(url);
     }
