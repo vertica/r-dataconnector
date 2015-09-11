@@ -146,13 +146,13 @@ void helper(const std::vector<boost::any>& records, const std::string& format) {
 
 TEST_F(FakeAssemblerTest, Fake) {
     std::vector<boost::any> records;
-    records.push_back(boost::any((int64_t)0));
+    records.push_back(boost::any((int32_t)0));
     records.push_back(boost::any(std::string("aaa")));
     records.push_back(boost::any((double)0.0));
-    records.push_back(boost::any((int64_t)1));
+    records.push_back(boost::any((int32_t)1));
     records.push_back(boost::any(std::string("bbb")));
     records.push_back(boost::any((double)1.0));
-    records.push_back(boost::any((int64_t)2));
+    records.push_back(boost::any((int32_t)2));
     records.push_back(boost::any(std::string("ccc")));
     records.push_back(boost::any((double)2.0));
 
@@ -161,9 +161,9 @@ TEST_F(FakeAssemblerTest, Fake) {
 
 TEST_F(FakeAssemblerTest, FakeColumnar) {
     std::vector<boost::any> records;
-    records.push_back(boost::any((int64_t)0));
-    records.push_back(boost::any((int64_t)1));
-    records.push_back(boost::any((int64_t)2));
+    records.push_back(boost::any((int32_t)0));
+    records.push_back(boost::any((int32_t)1));
+    records.push_back(boost::any((int32_t)2));
     records.push_back(boost::any(std::string("aaa")));
     records.push_back(boost::any(std::string("bbb")));
     records.push_back(boost::any(std::string("ccc")));

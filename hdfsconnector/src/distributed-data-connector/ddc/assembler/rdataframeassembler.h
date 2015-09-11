@@ -18,6 +18,7 @@
 #include "base/utils.h"
 #include "hdfsutils/hdfsinputstream.h"
 #include "hdfsutils/hdfsutils.h"
+#include "recordparser/csvrecordparser.h"
 #include "recordparser/orcrecordparser.h"
 #include "recordparser/recordparserfactory.h"
 
@@ -30,9 +31,10 @@
 namespace ddc {
 namespace assembler {
 
-typedef boost::variant<IntegerVectorPtr,
-                       CharacterVectorPtr,
+typedef boost::variant<BoolVectorPtr,
+                       Int32VectorPtr,
                        DoubleVectorPtr,
+                       CharacterVectorPtr,
                        SEXP> AnyVector;
 
 typedef boost::shared_ptr<Rcpp::NumericVector> RcppNumericVectorPtr;
@@ -174,6 +176,8 @@ private:
      * Column types
      */
     enum ColumnType {
+        ORC_BOOL_COL,
+        ORC_INT32_COL,
         ORC_INT64_COL,
         ORC_DOUBLE_COL,
         ORC_STRING_COL,

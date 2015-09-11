@@ -49,22 +49,33 @@ boost::any CsvRecordParser::next(){
     }
     //if we already have a line, consume that
     if((uint64_t)rowIndex_ < row_.size()) {
+        if (schema_.find(rowIndex_) == schema_.end() ) {
+            std::ostringstream os;
+            os << "Invalid schema. Unable to find type for column " << rowIndex_ << ".";
+            throw std::runtime_error(os.str());
+        }
+
         boost::any myany;
-        if(schema_[rowIndex_].second == "int64") {
-            if (row_[rowIndex_] == "") {
-                // otherwise atoll converts "" to 0
-                myany = row_[rowIndex_];
-            }
-            else {
-                myany = (int64_t)atoll(row_[rowIndex_].c_str());
-            }
+        bool isNull = false;
+        if (row_[rowIndex_] == "") {
+            isNull = true;
+            myany = CsvRecord(isNull);
         }
-        else if(schema_[rowIndex_].second == "string") {
-                myany = row_[rowIndex_];
+        else if (schema_[rowIndex_].second == "logical") {
+            myany = CsvRecord(isNull, static_cast<bool>(atoll(row_[rowIndex_].c_str())));
         }
-        else if(schema_[rowIndex_].second == "double") {
-            myany = (double)atof(row_[rowIndex_].c_str());
+        else if (schema_[rowIndex_].second == "integer") {
+            myany = CsvRecord(isNull, (int32_t)atoi(row_[rowIndex_].c_str()));
         }
+        else if (schema_[rowIndex_].second == "int64") {
+            myany = CsvRecord(isNull, (double)atof(row_[rowIndex_].c_str()));
+        }
+        else if (schema_[rowIndex_].second == "double") {
+            myany = CsvRecord(isNull, (double)atof(row_[rowIndex_].c_str()));
+        }
+        else if (schema_[rowIndex_].second == "character") {
+            myany = CsvRecord(isNull, row_[rowIndex_]);
+        }        
         else {
             std::ostringstream os;
             os << "Unsupported type ";

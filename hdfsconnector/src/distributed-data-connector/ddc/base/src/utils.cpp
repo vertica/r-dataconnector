@@ -39,6 +39,18 @@ bool areEqual(const boost::any& lhs, const boost::any& rhs)
         return res;
     }
 
+    if (lhs.type() == typeid(int32_t)) {
+        bool res = boost::any_cast<int32_t>(lhs) == boost::any_cast<int32_t>(rhs);
+        if(!res) {
+            std::cout << "int32_t mismatch-> " << boost::any_cast<int32_t>(lhs) <<
+                         " vs " << boost::any_cast<int32_t>(rhs)  << std::endl;
+        }
+        else {
+            //std::cout << "int32_t equal" << std::endl;
+        }
+        return res;
+    }
+
     if (lhs.type() == typeid(int64_t)) {
         bool res = boost::any_cast<int64_t>(lhs) == boost::any_cast<int64_t>(rhs);
         if(!res) {

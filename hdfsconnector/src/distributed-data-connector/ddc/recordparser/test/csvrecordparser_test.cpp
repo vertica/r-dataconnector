@@ -7,6 +7,7 @@
 #include "assembler/assemblerfactory.h"
 #include "fakesplitproducer.h"
 #include "blockreader/blockreaderfactory.h"
+#include "recordparser/csvrecordparser.h"
 #include "recordparser/recordparserfactory.h"
 #include "splitproducer/splitproducerfactory.h"
 
@@ -69,8 +70,8 @@ TEST_F(CsvRecordParserTest, Basic) {
     base::ConfigurationMap conf;
     conf["splitProducer"] = (splitproducer::ISplitProducerPtr)splitProducer;
     std::map<int32_t, std::pair<std::string,std::string> > schema;
-    schema[0] = std::make_pair("a","int64");
-    schema[1] = std::make_pair("b","string");
+    schema[0] = std::make_pair("a","integer");
+    schema[1] = std::make_pair("b","character");
     schema[2] = std::make_pair("c","double");
     conf["schema"] = schema;
     conf["delimiter"] = ',';
@@ -80,15 +81,23 @@ TEST_F(CsvRecordParserTest, Basic) {
     recordParser->registerListener(&o);
 
     std::vector<boost::any> records;
+    uint64_t i = 0;
     while(recordParser->hasNext()) {
         boost::any record = recordParser->next();
-        records.push_back(record);
+        recordparser::CsvRecord csvRecord = boost::any_cast<recordparser::CsvRecord>(record);
+        if (i % 3 == 0)
+            records.push_back(boost::get<int32_t>(csvRecord.value));
+        else if (i % 3 == 1)
+            records.push_back(boost::get<std::string>(csvRecord.value));
+        else if (i % 3 == 2)
+            records.push_back(boost::get<double>(csvRecord.value));
+        i += 1;
     }
 
     std::vector<boost::any> refRecords;
-    refRecords.push_back((int64_t)0); refRecords.push_back(std::string("aaa")); refRecords.push_back((double)0.0);
-    refRecords.push_back((int64_t)1); refRecords.push_back(std::string("bbb")); refRecords.push_back((double)1.0);
-    refRecords.push_back((int64_t)2); refRecords.push_back(std::string("ccc")); refRecords.push_back((double)2.0);
+    refRecords.push_back((int32_t)0); refRecords.push_back(std::string("aaa")); refRecords.push_back((double)0.0);
+    refRecords.push_back((int32_t)1); refRecords.push_back(std::string("bbb")); refRecords.push_back((double)1.0);
+    refRecords.push_back((int32_t)2); refRecords.push_back(std::string("ccc")); refRecords.push_back((double)2.0);
 
     std::cout << "read " << records.size() << " records" << std::endl;
     EXPECT_TRUE(base::utils::areEqual(records, refRecords));
@@ -151,8 +160,14 @@ TEST_P(CsvRecordParserParamTest, Generic){
 
 
     EXPECT_EQ(records.size(), p.numLines * p.numCols);
-    EXPECT_TRUE(base::utils::areEqual(records[0], (int64_t)0));
-    EXPECT_TRUE(base::utils::areEqual(records[records.size() - 1], (int64_t)(records.size() - 1)));
+    recordparser::CsvRecord csvRecord =
+            boost::any_cast<recordparser::CsvRecord>(records[0]);
+    double value = boost::get<double>(csvRecord.value);
+    EXPECT_TRUE(base::utils::areEqual(value, (double)0));
+    recordparser::CsvRecord csvRecord2 =
+            boost::any_cast<recordparser::CsvRecord>(records[records.size() - 1]);
+    double value2 = boost::get<double>(csvRecord2.value);
+    EXPECT_TRUE(base::utils::areEqual(value2, (double)(records.size() - 1)));
 
 
 }

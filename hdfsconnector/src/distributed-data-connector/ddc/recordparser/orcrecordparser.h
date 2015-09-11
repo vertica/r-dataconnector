@@ -14,7 +14,7 @@ namespace ddc {
 namespace recordparser {
 
 
-typedef boost::variant<std::string, int64_t, double> OrcPrimitive;
+typedef boost::variant<bool, int32_t, int64_t, double, std::string> OrcPrimitive;
 
 struct Node {
     Node()

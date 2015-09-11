@@ -109,7 +109,7 @@ TEST_F(DdcTest, LocalEx001Csv)
 
     Rcpp::DataFrame referenceDataFrame = getDataFrame();
     base::ConfigurationMap conf;
-    conf["schemaUrl"] = std::string("a:int64,b:string");
+    conf["schemaUrl"] = std::string("a:int64,b:character");
     conf["chunkStart"] = (uint64_t)0;
     conf["chunkEnd"] = (uint64_t)status.length;
     conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
@@ -141,7 +141,7 @@ TEST_F(DdcTest, HdfsEx001Csv)
 
     Rcpp::DataFrame referenceDataFrame = getDataFrame();
     base::ConfigurationMap conf;
-    conf["schemaUrl"] = std::string("a:int64,b:string");
+    conf["schemaUrl"] = std::string("a:int64,b:character");
     conf["chunkStart"] = (uint64_t)0;
     conf["chunkEnd"] = (uint64_t)status.length;
     conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
@@ -234,7 +234,7 @@ TEST_F(DdcTest, LocalEx002Csv)
 
     Rcpp::DataFrame referenceDataFrame = getDataFrame2();
     base::ConfigurationMap conf;
-    conf["schemaUrl"] = std::string("a:string,b:int64,c:string,d:int64");
+    conf["schemaUrl"] = std::string("a:character,b:int64,c:character,d:int64");
     conf["chunkStart"] = (uint64_t)0;
     conf["chunkEnd"] = (uint64_t)status.length;
     conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
@@ -264,7 +264,7 @@ TEST_F(DdcTest, HdfsEx002Csv)
 
     Rcpp::DataFrame referenceDataFrame = getDataFrame2();
     base::ConfigurationMap conf;
-    conf["schemaUrl"] = std::string("a:string,b:int64,c:string,d:int64");
+    conf["schemaUrl"] = std::string("a:character,b:int64,c:character,d:int64");
     conf["chunkStart"] = (uint64_t)0;
     conf["chunkEnd"] = (uint64_t)status.length;
     conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
@@ -280,8 +280,8 @@ TEST_F(DdcTest, HdfsEx002Csv)
 TEST_F(DdcTest, ParseSchema) {
     std::map<int32_t, std::pair<std::string,std::string> > refSchema;
     refSchema[0] = std::make_pair("a", "int64");
-    refSchema[1] = std::make_pair("b", "string");
-    std::map<int32_t, std::pair<std::string,std::string> > schema = parseSchema("a:int64,b:string");
+    refSchema[1] = std::make_pair("b", "character");
+    std::map<int32_t, std::pair<std::string,std::string> > schema = parseSchema("a:int64,b:character");
     EXPECT_EQ(refSchema, schema);
 }
 
@@ -370,22 +370,22 @@ TEST_P(DdcBasicCsvTest, General) {
 
 INSTANTIATE_TEST_CASE_P(CsvFiles, DdcBasicCsvTest, ::testing::Values(
     SimpleCsvConfig("../ddc/test/data/ex003.csv",
-              "000:int64,001:string",
+              "000:int64,001:character",
                     true),
     SimpleCsvConfig("../ddc/test/data/ex004.csv",
-              "000:int64,001:string",
+              "000:int64,001:character",
                     true),
     SimpleCsvConfig("../ddc/test/data/ex005.csv",
-              "000:int64,001:string",
+              "000:int64,001:character",
                     true),
     SimpleCsvConfig("../ddc/test/data/ex006.csv",
-              "000:int64,001:string",
-                    true),
+              "000:int64,001:character",
+                    false),
     SimpleCsvConfig("../ddc/test/data/ex007.csv",
-              "000:int64,001:string",
+              "000:int64,001:character",
                     true),
     SimpleCsvConfig("../ddc/test/data/ex008.csv",  // CSV file with a heading
-              "000:int64,001:string",
+              "000:int64,001:character",
                     false)
 ));
 

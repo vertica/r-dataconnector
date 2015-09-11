@@ -34,10 +34,12 @@ public:
 
 typedef boost::shared_ptr<IAssembler> IAssemblerPtr;
 
-typedef boost::shared_ptr<std::vector<int64_t> > IntegerVectorPtr;
-typedef boost::shared_ptr<std::vector<int64_t> > NumericVectorPtr;
-typedef boost::shared_ptr<std::vector<std::string> > CharacterVectorPtr;
+typedef boost::shared_ptr<std::vector<bool> > BoolVectorPtr;
+typedef boost::shared_ptr<std::vector<int32_t> > Int32VectorPtr;
+//typedef boost::shared_ptr<std::vector<int64_t> > Int64VectorPtr;
 typedef boost::shared_ptr<std::vector<double> > DoubleVectorPtr;
+typedef boost::shared_ptr<std::vector<std::string> > CharacterVectorPtr;
+
 
 }//namespace assembler
 }//namespace ddc

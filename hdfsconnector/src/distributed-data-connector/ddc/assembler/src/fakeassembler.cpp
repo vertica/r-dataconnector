@@ -5,15 +5,17 @@
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 #include <glog/logging.h>
 #include <Rcpp.h>
+#include "recordparser/csvrecordparser.h"
 #include "recordparser/recordparserfactory.h"
 #include "base/utils.h"
 
 namespace ddc {
 namespace assembler {
 
-typedef boost::variant<IntegerVectorPtr,
-                       CharacterVectorPtr,
+typedef boost::variant<BoolVectorPtr,
+                       Int32VectorPtr,
                        DoubleVectorPtr,
+                       CharacterVectorPtr,
                        SEXP> AnyVector;
 
 
@@ -43,42 +45,38 @@ static void handleVectors(AnyVector &v, boost::any& value) {
     switch (v.which()) {
         case 0:
         {
-            NumericVectorPtr v2 = boost::get<NumericVectorPtr>(v);
-            try{
-                v2->push_back(boost::any_cast<int64_t>(value));
-            }
-            catch(boost::bad_any_cast& e) {
-                LOG(ERROR) << "error casting int64_t";
-                throw;
-            }
-
+            // bool
+            BoolVectorPtr v2 = boost::get<BoolVectorPtr>(v);
+            bool v = boost::any_cast<bool>(value);
+            v2->push_back(v);
             break;
         }
         case 1:
         {
+            // int32
+            Int32VectorPtr v2 = boost::get<Int32VectorPtr>(v);
+            int32_t v = boost::any_cast<int32_t>(value);
+            v2->push_back(v);
+            break;
+        }
+        case 2:
+        {
+            // double
+            DoubleVectorPtr v2 = boost::get<DoubleVectorPtr>(v);
+            double v = boost::any_cast<double>(value);
+            v2->push_back(v);
+            break;
+        }
+        case 3:
+        {
+            // string
             CharacterVectorPtr v2 = boost::get<CharacterVectorPtr>(v);
-            try {
-                v2->push_back(boost::any_cast<std::string>(value));
-            }
-            catch(boost::bad_any_cast& e) {
-                LOG(ERROR) << "error casting string";
-                throw;
-            }
+            std::string v = boost::any_cast<std::string>(value);
+            v2->push_back(v);
             break;
         }
 
-        case 2:
-        {
-            DoubleVectorPtr v2 = boost::get<DoubleVectorPtr>(v);
-            try {
-                v2->push_back(boost::any_cast<double>(value));
-            }
-            catch(boost::bad_any_cast& e) {
-                LOG(ERROR) << "error casting double";
-                throw;
-            }
-            break;
-        }
+
         default:
         {
             throw std::runtime_error("Unsupported vector type");
@@ -95,7 +93,7 @@ boost::any FakeAssembler::getObject()
 
     //set schema to integer, string, date
     std::map<int32_t, AnyVector> columns;
-    columns.insert(make_pair(0, NumericVectorPtr(new std::vector<int64_t>())));
+    columns.insert(make_pair(0, Int32VectorPtr(new std::vector<int32_t>())));
     columns.insert(make_pair(1, CharacterVectorPtr(new std::vector<std::string>())));
     columns.insert(make_pair(2, DoubleVectorPtr(new std::vector<double>())));
 
@@ -115,7 +113,7 @@ boost::any FakeAssembler::getObject()
     }
 
 
-    Rcpp::NumericVector a = Rcpp::wrap(*(boost::get<NumericVectorPtr>(columns[0]).get()));
+    Rcpp::IntegerVector a = Rcpp::wrap(*(boost::get<Int32VectorPtr>(columns[0]).get()));
     Rcpp::CharacterVector b = Rcpp::wrap(*(boost::get<CharacterVectorPtr>(columns[1]).get()));
     Rcpp::DoubleVector c = Rcpp::wrap(*(boost::get<DoubleVectorPtr>(columns[2]).get()));
 
@@ -125,7 +123,6 @@ boost::any FakeAssembler::getObject()
         Rcpp::Named("c")=c
     );
     return boost::any(df);
-
 }
 
 void FakeAssembler::update(int32_t level)

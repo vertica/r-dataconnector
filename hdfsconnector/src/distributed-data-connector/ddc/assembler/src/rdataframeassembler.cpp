@@ -133,13 +133,21 @@ void RDataFrameAssembler::configureOrc()
         }
 
         switch((orcSchema_[i]).second) {
-        case orc::BOOLEAN:
+        case orc::BOOLEAN: {
+            columnTypes_.push_back(ORC_BOOL_COL);
+            columns_.push_back(BoolVectorPtr(new std::vector<bool>));
+            break;
+        }
         case orc::BYTE:
         case orc::SHORT:
-        case orc::INT:
+        case orc::INT: {
+            columnTypes_.push_back(ORC_INT32_COL);
+            columns_.push_back(Int32VectorPtr(new std::vector<int32_t>));
+            break;
+        }
         case orc::LONG: {
-            columnTypes_.push_back(ORC_INT64_COL);
-            columns_.push_back(IntegerVectorPtr(new std::vector<int64_t>));
+            columnTypes_.push_back(ORC_DOUBLE_COL);
+            columns_.push_back(DoubleVectorPtr(new std::vector<double>));
             break;
         }
         case orc::FLOAT:
@@ -192,7 +200,7 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
                           boost::get<int64_t>(node->value) <<
                           " addr: " << &(node->value) <<
                           ", level: " <<  level;
-            return Rf_ScalarLogical(boost::get<int64_t>(node->value));
+            return Rf_ScalarLogical(static_cast<bool>(boost::get<int64_t>(node->value)));
         }
         case orc::BYTE:
         case orc::SHORT:
@@ -201,9 +209,15 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
                       boost::get<int64_t>(node->value) <<
                           " addr: " << &(node->value) <<
                       ", level: " <<  level;
-            return Rf_ScalarInteger(boost::get<int64_t>(node->value));
+            return Rf_ScalarInteger(static_cast<int32_t>(boost::get<int64_t>(node->value)));
         }
-        case orc::LONG:
+        case orc::LONG: {
+            DLOG(INFO) << "returning LONG: " <<
+                      boost::get<int64_t>(node->value) <<
+                          " addr: " << &(node->value) <<
+                      ", level: " <<  level;
+            return Rf_ScalarReal(static_cast<double>(boost::get<int64_t>(node->value)));
+        }
         case orc::FLOAT:
         case orc::DOUBLE:{
             DLOG(INFO) << "returning DOUBLE: " <<
@@ -424,11 +438,11 @@ void RDataFrameAssembler::handleOrcRecord(boost::any& record)
     switch(node->type) {
         case orc::BOOLEAN:{
             if (node->isNull) {
-                (boost::get<IntegerVectorPtr>(columns_[colIndex_]))->push_back(NA_REAL);
+                (boost::get<BoolVectorPtr>(columns_[colIndex_]))->push_back(NA_LOGICAL);
             }
             else {
                 int64_t number = boost::get<int64_t>(node->value);
-                (boost::get<IntegerVectorPtr>(columns_[colIndex_]))->push_back(number);
+                (boost::get<BoolVectorPtr>(columns_[colIndex_]))->push_back(static_cast<bool>(number));
             }
             break;
         }
@@ -436,21 +450,21 @@ void RDataFrameAssembler::handleOrcRecord(boost::any& record)
         case orc::SHORT:
         case orc::INT: {
             if (node->isNull) {
-                (boost::get<IntegerVectorPtr>(columns_[colIndex_]))->push_back(NA_REAL);
+                (boost::get<Int32VectorPtr>(columns_[colIndex_]))->push_back(NA_INTEGER);
             }
             else {
                 int64_t number = boost::get<int64_t>(node->value);
-                (boost::get<IntegerVectorPtr>(columns_[colIndex_]))->push_back(number);
+                (boost::get<Int32VectorPtr>(columns_[colIndex_]))->push_back(static_cast<int32_t>(number));
             }
             break;
         }
         case orc::LONG: {
             if (node->isNull) {
-                (boost::get<IntegerVectorPtr>(columns_[colIndex_]))->push_back(NA_REAL);
+                (boost::get<DoubleVectorPtr>(columns_[colIndex_]))->push_back(NA_REAL);
             }
             else {
                 int64_t number = boost::get<int64_t>(node->value);
-                (boost::get<IntegerVectorPtr>(columns_[colIndex_]))->push_back(number);
+                (boost::get<DoubleVectorPtr>(columns_[colIndex_]))->push_back(static_cast<double>(number));
             }
             break;
         }
@@ -653,58 +667,90 @@ void RDataFrameAssembler::handleOrcRecord(boost::any& record)
 
 
 void RDataFrameAssembler::handleCsvRecord(AnyVector &v, boost::any& value) {
+    recordparser::CsvRecord record = boost::any_cast<recordparser::CsvRecord>(value);
+
     switch (v.which()) {
         case 0:
         {
-            // int64 type
-            IntegerVectorPtr v2 = boost::get<IntegerVectorPtr>(v);
-            try {
-                int64_t record = boost::any_cast<int64_t>(value);
-                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding record " << record << " to col: " << colIndex_ << " type: int64_t";
-                ++recordsAssembled_;
-                v2->push_back(record);
+            // bool type
+            BoolVectorPtr v2 = boost::get<BoolVectorPtr>(v);
+            if (record.isNull) {
+                v2->push_back(NA_LOGICAL);
+                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding NULL record to col: " << colIndex_ << " type: bool";
             }
-            catch(boost::bad_any_cast& e) {
-                LOG(ERROR) << "Unable to parse int64 record" <<
-                              " row: " << v2->size() <<
-                              " value: " << boost::any_cast<std::string>(value);
-                throw std::runtime_error("Unable to parse int64 value");
+            else {
+                bool v = boost::get<bool>(record.value);
+                v2->push_back(v);
+                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding record " << v << " to col: " << colIndex_ << " type: bool";
             }
+            ++recordsAssembled_;
             break;
         }
         case 1:
         {
-            // string type
-            CharacterVectorPtr v2 = boost::get<CharacterVectorPtr>(v);
-            try {
-                std::string record = boost::any_cast<std::string>(value);
-                DLOG_IF(INFO,recordsAssembled_  < 10) << "adding record " << record << " to col: " << colIndex_ << " type: string";
-                ++recordsAssembled_;
-                v2->push_back(record);
+            // int32 type
+            Int32VectorPtr v2 = boost::get<Int32VectorPtr>(v);
+            if (record.isNull) {
+                v2->push_back(NA_INTEGER);
+                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding NULL record to col: " << colIndex_ << " type: int32_t";
             }
-            catch(boost::bad_any_cast& e) {
-                LOG(ERROR) << "Unable to parse string record";
+            else {
+                int32_t v = boost::get<int32_t>(record.value);
+                v2->push_back(v);
+                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding record " << v << " to col: " << colIndex_ << " type: int32_t";
             }
+            ++recordsAssembled_;
             break;
         }
+//        case 0:
+//        {
+//            // int64 type
+//            IntegerVectorPtr v2 = boost::get<IntegerVectorPtr>(v);
+//            if (record.isNull) {
+//                v2->push_back(NA_INTEGER);
+//                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding NULL record to col: " << colIndex_ << " type: int64_t";
+//            }
+//            else {
+//                int64_t v = boost::get<int64_t>(record.value);
+//                v2->push_back(v);
+//                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding record " << v << " to col: " << colIndex_ << " type: int64_t";
+//            }
+//            ++recordsAssembled_;
+//            break;
+//        }
         case 2:
         {
             // double type
             DoubleVectorPtr v2 = boost::get<DoubleVectorPtr>(v);
-            try {
-                double record = boost::any_cast<double>(value);
-                DLOG_IF(INFO,recordsAssembled_  < 10) << "adding record " << record << " to col: " << colIndex_ << " type: double";
-                ++recordsAssembled_;
-                v2->push_back(record);
+            if (record.isNull) {
+                v2->push_back(NA_REAL);
+                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding NULL record to col: " << colIndex_ << " type: int64_t";
             }
-            catch(boost::bad_any_cast& e) {
-                LOG(ERROR) << "Unable to parse double record" <<
-                              " row: " << v2->size() <<
-                              " value: " << boost::any_cast<std::string>(value);
-                throw std::runtime_error("Unable to parse double value");
+            else {
+                double v = boost::get<double>(record.value);
+                v2->push_back(v);
+                DLOG_IF(INFO,recordsAssembled_  < 10) << "adding record " << v << " to col: " << colIndex_ << " type: double";
             }
+            ++recordsAssembled_;
             break;
         }
+        case 3:
+        {
+            // string type
+            CharacterVectorPtr v2 = boost::get<CharacterVectorPtr>(v);
+            if (record.isNull) {
+                v2->push_back("NA");
+                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding NULL record to col: " << colIndex_ << " type: int64_t";
+            }
+            else {
+                std::string v = boost::get<std::string>(record.value);
+                v2->push_back(v);
+                DLOG_IF(INFO,recordsAssembled_  < 10) << "adding record " << v << " to col: " << colIndex_ << " type: string";
+            }
+            ++recordsAssembled_;
+            break;
+        }
+
 
         default:
         {
@@ -737,8 +783,14 @@ boost::any RDataFrameAssembler::getObject()
         boost::shared_ptr<Rcpp::DataFrame> df(new Rcpp::DataFrame());
         for(int i = 0; i < columns_.size(); ++i) {
             switch(columnTypes_[i]) {
-            case ORC_INT64_COL:
-                df->push_back(PROTECT(Rcpp::wrap(*((boost::get<IntegerVectorPtr>(columns_[i])).get()))), columnNames_[i]);
+//            case ORC_INT64_COL:
+//                df->push_back(PROTECT(Rcpp::wrap(*((boost::get<IntegerVectorPtr>(columns_[i])).get()))), columnNames_[i]);
+//                break;
+            case ORC_BOOL_COL:
+                df->push_back(PROTECT(Rcpp::wrap(*((boost::get<BoolVectorPtr>(columns_[i])).get()))), columnNames_[i]);
+                break;
+            case ORC_INT32_COL:
+                df->push_back(PROTECT(Rcpp::wrap(*((boost::get<Int32VectorPtr>(columns_[i])).get()))), columnNames_[i]);
                 break;
             case ORC_DOUBLE_COL:
                 df->push_back(PROTECT(Rcpp::wrap(*((boost::get<DoubleVectorPtr>(columns_[i])).get()))), columnNames_[i]);
@@ -823,23 +875,31 @@ boost::any RDataFrameAssembler::getObject()
             std::pair<std::string, std::string> column = schema_[index];
             std::string columnName = column.first;
             std::string columnType = column.second;
-            if(columnType == "int64") {
+            if(columnType == "logical") {
+                DLOG(INFO) << "initializing column of type logical " << columnName << " index: " << index;
+                vectors.insert(make_pair(index, make_pair(columnName, AnyVector(boost::shared_ptr<std::vector<bool> >(new std::vector<bool>())))));
+            }
+            else if(columnType == "integer") {
+                DLOG(INFO) << "initializing column of type integer " << columnName << " index: " << index;
+                vectors.insert(make_pair(index, make_pair(columnName, AnyVector(boost::shared_ptr<std::vector<int32_t> >(new std::vector<int32_t>())))));
+            }
+            else if(columnType == "int64") {
                 DLOG(INFO) << "initializing column of type int64 " << columnName << " index: " << index;
-                vectors.insert(make_pair(index, make_pair(columnName, AnyVector(boost::shared_ptr<std::vector<int64_t> >(new std::vector<int64_t>())))));
-            }
-            else if(columnType == "string") {
-                DLOG(INFO) << "initializing column of type string " << columnName << " index: " << index;
-                vectors.insert(make_pair(index, make_pair(columnName, AnyVector(boost::shared_ptr<std::vector<std::string> >(new std::vector<std::string>())))));
-            }
-            else if(columnType == "double") {
-                DLOG(INFO) << "initializing column of type double " << columnName << " index: " << index;
                 vectors.insert(make_pair(index, make_pair(columnName, AnyVector(boost::shared_ptr<std::vector<double> >(new std::vector<double>())))));
             }
+            else if(columnType == "numeric") {
+                DLOG(INFO) << "initializing column of type numeric " << columnName << " index: " << index;
+                vectors.insert(make_pair(index, make_pair(columnName, AnyVector(boost::shared_ptr<std::vector<double> >(new std::vector<double>())))));
+            }
+            else if(columnType == "character") {
+                DLOG(INFO) << "initializing column of type character " << columnName << " index: " << index;
+                vectors.insert(make_pair(index, make_pair(columnName, AnyVector(boost::shared_ptr<std::vector<std::string> >(new std::vector<std::string>())))));
+            }            
             else {
                 std::ostringstream os;
                 os << "Unsupported type ";
                 os << columnType;
-                os << ". Supported types are int64, double and string";
+                os << ". Supported types are bool, integer, int64, numeric and character.";
                 throw std::runtime_error(os.str());
             }
             ++index;
@@ -879,25 +939,29 @@ boost::any RDataFrameAssembler::getObject()
             switch (v.which()) {
                 case 0:
                 {
-                    DLOG(INFO) << "copying column of type int64 " << columnName;
-                    IntegerVectorPtr v2 = boost::get<IntegerVectorPtr>(v);
-                    std::vector<int64_t> myv = *(v2.get());
+                    // bool
+                    DLOG(INFO) << "copying column of type bool " << columnName;
+                    BoolVectorPtr v2 = boost::get<BoolVectorPtr>(v);
+                    std::vector<bool> myv = *(v2.get());
                     // R integers are only 32 bits so we use the numeric type
-                    Rcpp::NumericVector myv2 = PROTECT(Rcpp::wrap(myv)); // copy vector to RcppVector
+                    Rcpp::LogicalVector myv2 = PROTECT(Rcpp::wrap(myv)); // copy vector to RcppVector
                     df->push_back(myv2, columnName); // add to DF
                     break;
                 }
                 case 1:
                 {
-                    DLOG(INFO) << "copying column of type string " << columnName;
-                    CharacterVectorPtr v2 = boost::get<CharacterVectorPtr>(v);
-                    std::vector<std::string> myv = *(v2.get());
-                    Rcpp::CharacterVector myv2 = PROTECT(Rcpp::wrap(myv)); // copy vector to RcppVector
+                    // int32
+                    DLOG(INFO) << "copying column of type int32 " << columnName;
+                    Int32VectorPtr v2 = boost::get<Int32VectorPtr>(v);
+                    std::vector<int32_t> myv = *(v2.get());
+                    // R integers are only 32 bits so we use the numeric type
+                    Rcpp::IntegerVector myv2 = PROTECT(Rcpp::wrap(myv)); // copy vector to RcppVector
                     df->push_back(myv2, columnName); // add to DF
                     break;
                 }
                 case 2:
                 {
+                    // double
                     DLOG(INFO) << "copying column of type double " << columnName;
                     DoubleVectorPtr v2 = boost::get<DoubleVectorPtr>(v);
                     std::vector<double> myv = *(v2.get());
@@ -905,6 +969,17 @@ boost::any RDataFrameAssembler::getObject()
                     df->push_back(myv2, columnName); // add to DF
                     break;
                 }
+                case 3:
+                {
+                    // string
+                    DLOG(INFO) << "copying column of type string " << columnName;
+                    CharacterVectorPtr v2 = boost::get<CharacterVectorPtr>(v);
+                    std::vector<std::string> myv = *(v2.get());
+                    Rcpp::CharacterVector myv2 = PROTECT(Rcpp::wrap(myv)); // copy vector to RcppVector
+                    df->push_back(myv2, columnName); // add to DF
+                    break;
+                }
+
                 default:
                 {
                     throw std::runtime_error("Unsupported  vector type");
