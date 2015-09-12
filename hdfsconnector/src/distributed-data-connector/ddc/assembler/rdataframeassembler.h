@@ -201,6 +201,13 @@ private:
      */
     typedef std::vector<uint64_t> RowIndexes;
     RowIndexes rowIndexes_;
+
+    /**
+     * Keeps track of null strings
+     * colIndex, rowIndex
+     */
+    std::map<uint64_t, std::vector<uint64_t> > nullStrings_;
+
 };
 
 typedef boost::shared_ptr<RDataFrameAssembler> RDataFrameAssemblerPtr;

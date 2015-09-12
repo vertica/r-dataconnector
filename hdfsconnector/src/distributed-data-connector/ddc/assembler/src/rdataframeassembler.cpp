@@ -488,6 +488,7 @@ void RDataFrameAssembler::handleOrcRecord(boost::any& record)
         case orc::CHAR:
         {
             if (node->isNull) {
+                nullStrings_[colIndex_].push_back((boost::get<CharacterVectorPtr>(columns_[colIndex_]))->size());
                 (boost::get<CharacterVectorPtr>(columns_[colIndex_]))->push_back("NA");  // TODO replaced by real strings NAs
             }
             else {
@@ -724,7 +725,7 @@ void RDataFrameAssembler::handleCsvRecord(AnyVector &v, boost::any& value) {
             DoubleVectorPtr v2 = boost::get<DoubleVectorPtr>(v);
             if (record.isNull) {
                 v2->push_back(NA_REAL);
-                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding NULL record to col: " << colIndex_ << " type: int64_t";
+                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding NULL record to col: " << colIndex_ << " type: double";
             }
             else {
                 double v = boost::get<double>(record.value);
@@ -739,8 +740,9 @@ void RDataFrameAssembler::handleCsvRecord(AnyVector &v, boost::any& value) {
             // string type
             CharacterVectorPtr v2 = boost::get<CharacterVectorPtr>(v);
             if (record.isNull) {
+                nullStrings_[colIndex_].push_back(v2->size());
                 v2->push_back("NA");
-                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding NULL record to col: " << colIndex_ << " type: int64_t";
+                DLOG_IF(INFO, recordsAssembled_ < 10) << "adding NULL record to col: " << colIndex_ << " type: string";
             }
             else {
                 std::string v = boost::get<std::string>(record.value);
@@ -795,9 +797,19 @@ boost::any RDataFrameAssembler::getObject()
             case ORC_DOUBLE_COL:
                 df->push_back(PROTECT(Rcpp::wrap(*((boost::get<DoubleVectorPtr>(columns_[i])).get()))), columnNames_[i]);
                 break;
-            case ORC_STRING_COL:
-                df->push_back(PROTECT(Rcpp::wrap(*((boost::get<CharacterVectorPtr>(columns_[i])).get()))), columnNames_[i]);
+            case ORC_STRING_COL: {
+                Rcpp::CharacterVector myv2 = PROTECT(Rcpp::wrap(*((boost::get<CharacterVectorPtr>(columns_[i])).get()))); // copy vector to RcppVector
+
+                // replace "NA" by proper NA
+                std::vector<uint64_t> nullStrings = nullStrings_[i];
+                for (int j = 0; j < nullStrings.size(); ++j) {
+                    myv2[nullStrings[j]] = NA_STRING;
+                }
+
+                df->push_back(myv2, columnNames_[i]); // add to DF
+
                 break;
+            }
             case ORC_LIST_COL: {
                 if (orcSchema_[i].second == orc::STRUCT) {
                     Rcpp::List col = boost::get<SEXP>(columns_[i]);
@@ -902,6 +914,8 @@ boost::any RDataFrameAssembler::getObject()
                 os << ". Supported types are bool, integer, int64, numeric and character.";
                 throw std::runtime_error(os.str());
             }
+            // initialize nullStrings_
+            nullStrings_[index] = std::vector<uint64_t>();
             ++index;
         }
         // process records
@@ -932,6 +946,7 @@ boost::any RDataFrameAssembler::getObject()
 
         }
         boost::shared_ptr<Rcpp::DataFrame> df(new Rcpp::DataFrame);
+        uint64_t col = 0;
         for(vector_it it = vectors.begin(); it != vectors.end(); ++it) {
             std::pair<std::string, AnyVector> value = it->second;
             std::string columnName = value.first;
@@ -976,6 +991,13 @@ boost::any RDataFrameAssembler::getObject()
                     CharacterVectorPtr v2 = boost::get<CharacterVectorPtr>(v);
                     std::vector<std::string> myv = *(v2.get());
                     Rcpp::CharacterVector myv2 = PROTECT(Rcpp::wrap(myv)); // copy vector to RcppVector
+
+                    // replace "NA" by proper NA
+                    std::vector<uint64_t> nullStrings = nullStrings_[col];
+                    for (int i = 0; i < nullStrings.size(); ++i) {
+                        myv2[nullStrings[i]] = NA_STRING;
+                    }
+
                     df->push_back(myv2, columnName); // add to DF
                     break;
                 }
@@ -985,6 +1007,7 @@ boost::any RDataFrameAssembler::getObject()
                     throw std::runtime_error("Unsupported  vector type");
                 }
             }
+            col += 1;
         }
         UNPROTECT(vectors.size());
         return boost::any(df);
