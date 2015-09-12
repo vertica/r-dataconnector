@@ -9,7 +9,7 @@ ddc_read <- function(url, options) {
     .Call('hdfsconnector_ddc_read', PACKAGE = 'hdfsconnector', url, options)
 }
 
-create_plan <- function(url, options, workerMap) {
-    .Call('hdfsconnector_create_plan', PACKAGE = 'hdfsconnector', url, options, workerMap)
+create_plan <- function(url, options, workerMapR) {
+    .Call('hdfsconnector_create_plan', PACKAGE = 'hdfsconnector', url, options, workerMapR)
 }
 
