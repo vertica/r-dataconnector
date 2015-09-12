@@ -72,7 +72,7 @@ TEST_F(CsvRecordParserTest, Basic) {
     std::map<int32_t, std::pair<std::string,std::string> > schema;
     schema[0] = std::make_pair("a","integer");
     schema[1] = std::make_pair("b","character");
-    schema[2] = std::make_pair("c","double");
+    schema[2] = std::make_pair("c","numeric");
     conf["schema"] = schema;
     conf["delimiter"] = ',';
     conf["commentCharacter"] = '#';

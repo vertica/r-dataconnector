@@ -57,6 +57,7 @@ private:
     char delimiter_;
     char commentCharacter_;
     uint64_t commentLinesDiscarded_;
+    uint64_t blankLinesDiscarded_;
 };
 
 } // namespace recordparsing

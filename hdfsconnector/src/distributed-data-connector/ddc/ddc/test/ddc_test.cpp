@@ -371,19 +371,19 @@ TEST_P(DdcBasicCsvTest, General) {
 INSTANTIATE_TEST_CASE_P(CsvFiles, DdcBasicCsvTest, ::testing::Values(
     SimpleCsvConfig("../ddc/test/data/ex003.csv",
               "000:int64,001:character",
-                    true),
+                    false),
     SimpleCsvConfig("../ddc/test/data/ex004.csv",
               "000:int64,001:character",
-                    true),
+                    false),
     SimpleCsvConfig("../ddc/test/data/ex005.csv",
               "000:int64,001:character",
-                    true),
+                    false),
     SimpleCsvConfig("../ddc/test/data/ex006.csv",
               "000:int64,001:character",
                     false),
     SimpleCsvConfig("../ddc/test/data/ex007.csv",
               "000:int64,001:character",
-                    true),
+                    false),
     SimpleCsvConfig("../ddc/test/data/ex008.csv",  // CSV file with a heading
               "000:int64,001:character",
                     false)

@@ -12,7 +12,8 @@ CsvRecordParser::CsvRecordParser()
       recordsProduced_(0),
       delimiter_(','),
       commentCharacter_('#'),
-      commentLinesDiscarded_(0)
+      commentLinesDiscarded_(0),
+      blankLinesDiscarded_(0)
 {    
     observer_ = NULL;
 }
@@ -70,7 +71,7 @@ boost::any CsvRecordParser::next(){
         else if (schema_[rowIndex_].second == "int64") {
             myany = CsvRecord(isNull, (double)atof(row_[rowIndex_].c_str()));
         }
-        else if (schema_[rowIndex_].second == "double") {
+        else if (schema_[rowIndex_].second == "numeric") {
             myany = CsvRecord(isNull, (double)atof(row_[rowIndex_].c_str()));
         }
         else if (schema_[rowIndex_].second == "character") {
@@ -102,6 +103,7 @@ boost::any CsvRecordParser::next(){
             std::string line;
 
             bool isCommentLineFlag = false;
+            bool isEmptyLineFlag = false;
             do {
                 try {
                     s = splitProducer_->next();
@@ -118,8 +120,15 @@ boost::any CsvRecordParser::next(){
                 if (isCommentLineFlag) {
                     ++commentLinesDiscarded_;
                 }
+                /**
+                 * Discard blank lines
+                 */
+                isEmptyLineFlag = line == "";
+                if (isEmptyLineFlag) {
+                    ++blankLinesDiscarded_;
+                }
             }
-            while (isCommentLineFlag);
+            while (isCommentLineFlag || isEmptyLineFlag);
 
             std::istringstream ss(line);
             text::csv::csv_istream is(ss, delimiter_);
