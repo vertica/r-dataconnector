@@ -75,7 +75,6 @@ NULL
 
 csv2dataframe <- function(url, ...) {
     options = list(...)
-    print(options)
     if(!("hdfsConfigurationFile" %in% names(options))) {
         # set default hdfsConfigurationFile
         options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
