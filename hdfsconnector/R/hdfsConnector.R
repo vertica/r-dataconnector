@@ -67,20 +67,41 @@ NULL
 #'                                  "hdfsUser": "jorgem" \cr
 #'                                  \}
 #'
+#' @param hdfsConfigurationStr HDFS configuration in string format. Useful for Distributed R. 
+#'                             Normally users specify hdfsConfigurationFile instead of hdfsConfigurationStr.
 #' @return A dataframe representing the CSV file.
 #' @examples
 #' df <- csv2dataframe(url=paste(system.file(package='hdfsconnector'),'/tests/testthat/data/csv/ex001.csv',sep=''), schema='a:int64,b:string')
 
 csv2dataframe <- function(url, ...) {
     options = list(...)
-
-    if(!("hdfsConfigurationFile" %in% options)) {
+    print(options)
+    if(!("hdfsConfigurationFile" %in% names(options))) {
         # set default hdfsConfigurationFile
         options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
     }
 
+    tmpfilename <- ''
+    if(("hdfsConfigurationStr" %in% names(options))) {
+        tmpfilename <- tempfile(pattern = "hdfs_", tmpdir = '/tmp', fileext = ".json")
+        f <- file(tmpfilename)
+        writeLines(as.character(options["hdfsConfigurationStr"]),f)
+        close(f)
+        options["hdfsConfigurationFile"] = tmpfilename
+    }
+
     options['fileType'] = 'csv'
-    ddc_read(url, options)
+
+    df <- tryCatch({
+            ddc_read(url, options)
+        }, error=function(e) {
+            stop(e)
+        }, finally = {
+            if(("hdfsConfigurationStr" %in% names(options))) {
+                file.remove(tmpfilename)
+            }
+        })
+    df
 }
 
 #' Load an ORC file into a data frame
@@ -126,6 +147,8 @@ csv2dataframe <- function(url, ...) {
 #'                                  "hdfsHost": "172.17.0.3", \cr
 #'                                  "hdfsUser": "jorgem" \cr
 #'                                  \}
+#' @param hdfsConfigurationStr HDFS configuration in string format. Useful for Distributed R. 
+#'                             Normally users specify hdfsConfigurationFile instead of hdfsConfigurationStr.
 #' @return A dataframe representing the ORC file.
 #' @examples
 #' df <- orc2dataframe(url=paste(system.file(package='hdfsconnector'),'/tests/testthat/data/orc/TestOrcFile.test1.orc',sep=''))
@@ -133,13 +156,32 @@ csv2dataframe <- function(url, ...) {
 orc2dataframe <- function(url, ...) {
     options = list(...)
 
-    if(!("hdfsConfigurationFile" %in% options)) {
+    if(!("hdfsConfigurationFile" %in% names(options))) {
         # set default hdfsConfigurationFile
         options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
     }
 
+    tmpfilename <- ''
+    if("hdfsConfigurationStr" %in% names(options)) {
+        tmpfilename <- tempfile(pattern = "hdfs_", tmpdir = '/tmp', fileext = ".json")
+        f <- file(tmpfilename)
+        writeLines(as.character(options["hdfsConfigurationStr"]),f)
+        close(f)
+        options["hdfsConfigurationFile"] = tmpfilename
+    }
+
     options['fileType'] = 'orc'
-    ddc_read(url, options)
+
+    df <- tryCatch({
+            ddc_read(url, options)
+        }, error=function(e) {
+            stop(e)
+        }, finally = {
+            if(("hdfsConfigurationStr" %in% names(options))) {
+                file.remove(tmpfilename)
+            }
+        })
+    df
 }
 
 #' Save an R object to a file in HDFS or the local file system.
@@ -167,6 +209,8 @@ orc2dataframe <- function(url, ...) {
 #'                                  "hdfsHost": "172.17.0.3", \cr
 #'                                  "hdfsUser": "jorgem" \cr
 #'                                  \}
+#' @param hdfsConfigurationStr HDFS configuration in string format. Useful for Distributed R. 
+#'                             Normally users specify hdfsConfigurationFile instead of hdfsConfigurationStr.
 #' @return Nothing
 #' @examples
 #' str <- "hello world"; object2hdfs(str, '/tmp/file.txt')
@@ -174,10 +218,27 @@ orc2dataframe <- function(url, ...) {
 object2hdfs <- function(object, url, ...) {
     options = list(...)
 
-    if(!("hdfsConfigurationFile" %in% options)) {
+    if(!("hdfsConfigurationFile" %in% names(options))) {
         # set default hdfsConfigurationFile
         options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
     }
 
-    ddc_write(object, url, options)
+    tmpfilename <- ''
+    if("hdfsConfigurationStr" %in% names(options)) {
+        tmpfilename <- tempfile(pattern = "hdfs_", tmpdir = '/tmp', fileext = ".json")
+        f <- file(tmpfilename)
+        writeLines(as.character(options["hdfsConfigurationStr"]),f)
+        close(f)
+        options["hdfsConfigurationFile"] = tmpfilename
+    }
+    ret <- tryCatch({
+            ddc_write(object, url, options)
+        }, error=function(e) {
+            stop(e)
+        }, finally = {
+            if(("hdfsConfigurationStr" %in% names(options))) {
+                file.remove(tmpfilename)
+            }
+        })
+    ret
 }

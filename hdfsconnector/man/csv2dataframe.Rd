@@ -59,6 +59,9 @@ csv2dataframe(url, ...)
                                  "hdfsHost": "172.17.0.3", \cr
                                  "hdfsUser": "jorgem" \cr
                                  \}}
+
+\item{hdfsConfigurationStr}{HDFS configuration in string format. Useful for Distributed R.
+Normally users specify hdfsConfigurationFile instead of hdfsConfigurationStr.}
 }
 \value{
 A dataframe representing the CSV file.

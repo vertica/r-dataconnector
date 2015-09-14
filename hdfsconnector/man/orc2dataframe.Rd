@@ -33,6 +33,9 @@ orc2dataframe(url, ...)
                                  "hdfsHost": "172.17.0.3", \cr
                                  "hdfsUser": "jorgem" \cr
                                  \}}
+
+\item{hdfsConfigurationStr}{HDFS configuration in string format. Useful for Distributed R.
+Normally users specify hdfsConfigurationFile instead of hdfsConfigurationStr.}
 }
 \value{
 A dataframe representing the ORC file.
@@ -40,7 +43,7 @@ A dataframe representing the ORC file.
 \description{
 Type conversions work as follows:
                \tabular{ll}{
-                   ORC type          \\tab R type        \cr
+                   ORC type          |\tab R type        \cr
                    -                 |\tab -             \cr
                    byte/short/int    |\tab integer       \cr
                    float/double      |\tab numeric       \cr
