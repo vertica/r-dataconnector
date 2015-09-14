@@ -149,7 +149,7 @@ SplitPtr DelimiterSplitProducer::next()
         }
 
     } // while((offset_ < splitEnd_) || (inLastRecord && offset_ < fileEnd_)) {
-    if(split_.size() > 0) {
+    if((split_.size() > 0) && !skipRecord_) {
         SplitPtr res = SplitPtr(new Split(boost::shared_ptr<std::string>(new std::string(split_))));
         DLOG(INFO) << "returning record: " << split_;
         split_.clear();
