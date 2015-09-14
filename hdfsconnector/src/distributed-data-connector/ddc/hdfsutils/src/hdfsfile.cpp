@@ -30,9 +30,11 @@ void HdfsFile::configure(base::ConfigurationMap &conf) {
     char *error = NULL;
     conf_ = webhdfs_conf_load(hdfsConfigurationFile_.c_str(), &error);
     if(!conf_) {
-        std::string errorStr("error reading hdfs config");
+        std::ostringstream os;
+        os << "Error reading hdfs config: " << hdfsConfigurationFile_ << " : ";
+        std::string errorStr(os.str());
         if (error) {
-            errorStr = std::string(error);
+            errorStr += std::string(error);
             free(error);
         }
         throw std::runtime_error(errorStr);
