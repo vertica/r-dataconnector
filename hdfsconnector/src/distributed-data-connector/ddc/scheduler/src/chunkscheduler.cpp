@@ -265,12 +265,13 @@ void ChunkScheduler::divide(const uint64_t numExecutors,
         Key key(fileSize, Chunk(i, protocol, files[i], 0, fileSize));
         map[key] = true;
     }
+    const uint64_t MIN_CHUNK_SIZE = 2; // 2 bytes
     while (map.size() < numExecutors) {
         Map::iterator it = map.begin();
         Key biggest = it->first;
         uint64_t size = biggest.chunk.end - biggest.chunk.start;
         if (size == 0) break;
-        if ((size / 2) == 0) break;
+        if ((size / 2) < MIN_CHUNK_SIZE) break;
         // split chunk in 2
         map.erase(biggest);
         Key smallKey1(size/2, Chunk(map.size(), protocol, biggest.chunk.filename, biggest.chunk.start, biggest.chunk.start + (size / 2)));
