@@ -269,7 +269,7 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
 
             Rcpp::StringVector rownames(len);
             for(uint64_t i = 0; i < len; ++i) {
-                rownames[i] = base::utils::to_string(i);
+                rownames[i] = base::utils::to_string(i+1);
             }
             if (mapValueIsStruct) {
                 //
@@ -325,7 +325,7 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
             for (int i = 0; i < len; ++i) {
                 // TODO get real keys?
                 list.push_back(ParseValue(node->elements[i],level + 1));
-                rownames[i] = base::utils::to_string(i);
+                rownames[i] = base::utils::to_string(i+1);
             }
 
             bool childIsStruct = false;
@@ -407,7 +407,7 @@ static SEXP createDataframe(const uint64_t ncols,
 
     PROTECT(rownam = Rf_allocVector(STRSXP, nrows)); // row.names attribute
     for(uint64_t i = 0; i < nrows; ++i) {
-        SET_STRING_ELT(rownam, i, Rf_mkChar(base::utils::to_string(i).c_str()));
+        SET_STRING_ELT(rownam, i, Rf_mkChar(base::utils::to_string(i+1).c_str()));
     }
     Rf_setAttrib(ret, R_RowNamesSymbol, rownam);
     UNPROTECT(1);
@@ -539,7 +539,7 @@ void RDataFrameAssembler::handleOrcRecord(boost::any& record)
 
             Rcpp::StringVector rownames(len);
             for(uint64_t i = 0; i < len; ++i) {
-                rownames[i] = base::utils::to_string(i);
+                rownames[i] = base::utils::to_string(i+1);
             }
 
             if (mapValueIsStruct) {
@@ -869,7 +869,7 @@ boost::any RDataFrameAssembler::getObject()
         UNPROTECT(columns_.size());  // this also accounts for the creation of list-type columns in configureOrc()
         Rcpp::StringVector rownames(numRows_);
         for(uint64_t i = 0; i < numRows_; ++i) {
-            rownames[i] = base::utils::to_string(i);
+            rownames[i] = base::utils::to_string(i+1);
         }
         df->attr("row.names") = rownames;
         df->attr("class") = "data.frame";
