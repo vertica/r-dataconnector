@@ -203,6 +203,12 @@ private:
     RowIndexes rowIndexes_;
 
     /**
+     * Keeps track of null bools
+     * colIndex, rowIndex
+     */
+    std::map<uint64_t, std::vector<uint64_t> > nullBools_;
+
+    /**
      * Keeps track of null strings
      * colIndex, rowIndex
      */

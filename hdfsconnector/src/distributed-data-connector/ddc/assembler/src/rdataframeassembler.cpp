@@ -438,6 +438,7 @@ void RDataFrameAssembler::handleOrcRecord(boost::any& record)
     switch(node->type) {
         case orc::BOOLEAN:{
             if (node->isNull) {
+                nullBools_[colIndex_].push_back((boost::get<BoolVectorPtr>(columns_[colIndex_]))->size());
                 (boost::get<BoolVectorPtr>(columns_[colIndex_]))->push_back(NA_LOGICAL);
             }
             else {
@@ -676,6 +677,7 @@ void RDataFrameAssembler::handleCsvRecord(AnyVector &v, boost::any& value) {
             // bool type
             BoolVectorPtr v2 = boost::get<BoolVectorPtr>(v);
             if (record.isNull) {
+                nullBools_[colIndex_].push_back(v2->size());
                 v2->push_back(NA_LOGICAL);
                 DLOG_IF(INFO, recordsAssembled_ < 10) << "adding NULL record to col: " << colIndex_ << " type: bool";
             }
@@ -788,9 +790,18 @@ boost::any RDataFrameAssembler::getObject()
 //            case ORC_INT64_COL:
 //                df->push_back(PROTECT(Rcpp::wrap(*((boost::get<IntegerVectorPtr>(columns_[i])).get()))), columnNames_[i]);
 //                break;
-            case ORC_BOOL_COL:
-                df->push_back(PROTECT(Rcpp::wrap(*((boost::get<BoolVectorPtr>(columns_[i])).get()))), columnNames_[i]);
+            case ORC_BOOL_COL: {
+                Rcpp::LogicalVector myv2 = PROTECT(Rcpp::wrap(*((boost::get<BoolVectorPtr>(columns_[i])).get()))); // copy vector to RcppVector
+
+                // replace sliced NA_LOGICAL by proper NA
+                std::vector<uint64_t> nullBools = nullBools_[i];
+                for (int j = 0; j < nullBools.size(); ++j) {
+                    myv2[nullBools[j]] = NA_LOGICAL;
+                }
+
+                df->push_back(myv2, columnNames_[i]); // add to DF
                 break;
+            }
             case ORC_INT32_COL:
                 df->push_back(PROTECT(Rcpp::wrap(*((boost::get<Int32VectorPtr>(columns_[i])).get()))), columnNames_[i]);
                 break;
@@ -807,7 +818,6 @@ boost::any RDataFrameAssembler::getObject()
                 }
 
                 df->push_back(myv2, columnNames_[i]); // add to DF
-
                 break;
             }
             case ORC_LIST_COL: {
@@ -914,7 +924,8 @@ boost::any RDataFrameAssembler::getObject()
                 os << ". Supported types are bool, integer, int64, numeric and character.";
                 throw std::runtime_error(os.str());
             }
-            // initialize nullStrings_
+            // initialize nullBools_ and nullStrings_
+            nullBools_[index] = std::vector<uint64_t>();
             nullStrings_[index] = std::vector<uint64_t>();
             ++index;
         }
@@ -958,8 +969,14 @@ boost::any RDataFrameAssembler::getObject()
                     DLOG(INFO) << "copying column of type bool " << columnName;
                     BoolVectorPtr v2 = boost::get<BoolVectorPtr>(v);
                     std::vector<bool> myv = *(v2.get());
-                    // R integers are only 32 bits so we use the numeric type
                     Rcpp::LogicalVector myv2 = PROTECT(Rcpp::wrap(myv)); // copy vector to RcppVector
+
+                    // replace "NA" by proper NA
+                    std::vector<uint64_t> nullBools = nullBools_[col];
+                    for (int i = 0; i < nullBools.size(); ++i) {
+                        myv2[nullBools[i]] = NA_LOGICAL;
+                    }
+
                     df->push_back(myv2, columnName); // add to DF
                     break;
                 }
