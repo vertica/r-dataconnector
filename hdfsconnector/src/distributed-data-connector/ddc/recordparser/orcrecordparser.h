@@ -17,7 +17,7 @@ namespace recordparser {
 typedef boost::variant<bool, int32_t, int64_t, double, std::string> OrcPrimitive;
 
 struct Node {
-    Node()
+    Node() : isNull(false)
     {
     }
 

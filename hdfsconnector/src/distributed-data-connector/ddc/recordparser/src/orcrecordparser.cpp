@@ -242,7 +242,6 @@ std::string timeStampToString(int64_t timestamp) {
     return str;
 }
 
-
 void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
                                 orc::TypeKind kind,
                                 uint64_t rowId,
@@ -250,10 +249,12 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
                                 NodePtr  record,
                                 NodePtr parent)
 {
-    record->isNull = false;
-    if(column->hasNulls && !column->notNull[rowId]) {
-        nullCount_[colIndex_] += 1;
-        record->isNull = true;
+    if (nestedLevel == 0) {
+        record->isNull = false;
+        if(column->hasNulls && !column->notNull[rowId]) {
+            nullCount_[colIndex_] += 1;
+            record->isNull = true;
+        }
     }
 
     if(rowId >= column->numElements) {
@@ -275,7 +276,9 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             }
             else {
                 assert(parent);
-                NodePtr node1(new Node); node1->type = kind; node1->value = record->isNull ? 0 : buffer[rowId];
+                NodePtr node1(new Node); node1->type = kind;
+                node1->value = (column->hasNulls && !column->notNull[rowId]) ? 0 :
+                                   buffer[rowId]; node1->isNull = (column->hasNulls && !column->notNull[rowId]);
                 switch(parent->type) {
                     case orc::MAP: {
                         NodePtr key(new Node); key->type = orc::STRING; key->value = "key";
@@ -294,11 +297,11 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
                 }
             }
 
-            int64_t value = record->isNull ? 0 : buffer[rowId];
-            DLOG_IF(INFO, (rowId < 4) ) << "LONG col: " << colIndex_ <<
-                                         " rowId: " << rowId <<
-                                         " value: " << value <<
-                                            " level: " << nestedLevel;
+//            int64_t value = record->isNull ? 0 : buffer[rowId];
+//            DLOG_IF(INFO, (rowId < 4) ) << "LONG col: " << colIndex_ <<
+//                                         " rowId: " << rowId <<
+//                                         " value: " << value <<
+//                                            " level: " << nestedLevel;
 
             break;
         }
@@ -311,7 +314,9 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             }
             else {
                 assert(parent);
-                NodePtr node1(new Node); node1->type = kind; node1->value = record->isNull ? 0.0 : buffer[rowId];
+                NodePtr node1(new Node); node1->type = kind;
+                node1->value = (column->hasNulls && !column->notNull[rowId]) ? 0.0 :
+                                   buffer[rowId]; node1->isNull = (column->hasNulls && !column->notNull[rowId]);
                 switch(parent->type) {
                     case orc::MAP: {
                         NodePtr key(new Node); key->type = orc::STRING; key->value = "key";
@@ -330,10 +335,10 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
                     }
                 }
             }
-            double value = record->isNull ? 0.0 : buffer[rowId];
-            DLOG_IF(INFO, rowId < 4) << "DOUBLE col: " << colIndex_ <<
-                                         " rowId: " << rowId <<
-                                         " value: " << value;
+//            double value = record->isNull ? 0.0 : buffer[rowId];
+//            DLOG_IF(INFO, rowId < 4) << "DOUBLE col: " << colIndex_ <<
+//                                         " rowId: " << rowId <<
+//                                         " value: " << value;
             break;
         }
         case orc::BINARY:
@@ -349,7 +354,8 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             else {
                 assert(parent);
                 NodePtr node1(new Node); node1->type = kind;
-                node1->value = record->isNull ? std::string("NULL") : std::string(buffer[rowId],len[rowId]);
+                node1->value = (column->hasNulls && !column->notNull[rowId]) ? std::string("NULL") :
+                                   std::string(buffer[rowId],len[rowId]); node1->isNull = (column->hasNulls && !column->notNull[rowId]);
                 switch(parent->type) {
                     case orc::MAP: {
                         NodePtr key(new Node); key->type = orc::STRING; key->value = "key";
@@ -367,18 +373,18 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
                     }
                 }
             }
-            std::string value = record->isNull ? std::string("NULL") : std::string(buffer[rowId],len[rowId]);
-            DLOG_IF(INFO, (rowId < 4) ) << "STRING col: " << colIndex_ <<
-                                         " rowId: " << rowId <<
-                                         " value: " << value <<
-                                            " level: " << nestedLevel;
+//            std::string value = record->isNull ? std::string("NULL") : std::string(buffer[rowId],len[rowId]);
+//            DLOG_IF(INFO, (rowId < 4) ) << "STRING col: " << colIndex_ <<
+//                                         " rowId: " << rowId <<
+//                                         " value: " << value <<
+//                                            " level: " << nestedLevel;
             break;
         }
 
         case orc::DATE: {
             int64_t* buffer = ((orc::LongVectorBatch *)column)->data.data();
             char timeBuffer[11];
-            if (record->isNull) {
+            if ((column->hasNulls && !column->notNull[rowId])) {
                 timeBuffer[0] = '\0';
             }
             else {
@@ -395,6 +401,7 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             else {
                 assert(parent);
                 NodePtr node1(new Node); node1->type = kind; node1->value = std::string(timeBuffer);
+                node1->isNull = (column->hasNulls && !column->notNull[rowId]);
                 switch(parent->type) {
                     case orc::MAP: {
                         NodePtr key(new Node); key->type = orc::STRING; key->value = "key";
@@ -412,15 +419,15 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
                     }
                 }
             }
-            DLOG_IF(INFO, (rowId < 4) && (nestedLevel == 0)) << "DATE col: " << colIndex_ <<
-                                         " rowId: " << rowId <<
-                                         " value: " << std::string(timeBuffer);
+//            DLOG_IF(INFO, (rowId < 4) && (nestedLevel == 0)) << "DATE col: " << colIndex_ <<
+//                                         " rowId: " << rowId <<
+//                                         " value: " << std::string(timeBuffer);
             break;
         }
         case orc::TIMESTAMP: {
             int64_t* buffer = ((orc::LongVectorBatch *)column)->data.data();
             std::string str;
-            if (record->isNull) {
+            if ((column->hasNulls && !column->notNull[rowId])) {
                 str = "";
             }
             else {
@@ -433,6 +440,7 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             else {
                 assert(parent);
                 NodePtr node1(new Node); node1->type = kind; node1->value = timeStampToString(buffer[rowId]);
+                node1->isNull = (column->hasNulls && !column->notNull[rowId]);
                 switch(parent->type) {
                     case orc::MAP: {
                         NodePtr key(new Node); key->type = orc::STRING; key->value = "key";
@@ -450,9 +458,9 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
                     }
                 }
             }
-            DLOG_IF(INFO, (rowId < 4) && (nestedLevel == 0)) << "TIMESTAMP col: " << colIndex_ <<
-                                         " rowId: " << rowId <<
-                                         " value: " << str;
+//            DLOG_IF(INFO, (rowId < 4) && (nestedLevel == 0)) << "TIMESTAMP col: " << colIndex_ <<
+//                                         " rowId: " << rowId <<
+//                                         " value: " << str;
             break;
         }
         case orc::UNION: {
@@ -465,6 +473,7 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             else {
                 assert(parent);
                 NodePtr node1(new Node); node1->type = kind; node1->value = "unimplemented";
+                node1->isNull = (column->hasNulls && !column->notNull[rowId]);
                 switch(parent->type) {
                     case orc::MAP: {
                         NodePtr key(new Node); key->type = orc::STRING; key->value = "key";
@@ -483,10 +492,10 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
                 }
             }
 
-            DLOG_IF(INFO, (rowId < 4) && (nestedLevel == 0)) << "UNION col: " << colIndex_ <<
-                                         " rowId: " << rowId <<
-                                         " tag: " << (unionCol->tags)[rowId] <<
-                                         " childOffset: " << (unionCol->offsets)[rowId];
+//            DLOG_IF(INFO, (rowId < 4) && (nestedLevel == 0)) << "UNION col: " << colIndex_ <<
+//                                         " rowId: " << rowId <<
+//                                         " tag: " << (unionCol->tags)[rowId] <<
+//                                         " childOffset: " << (unionCol->offsets)[rowId];
 
             break;
         }
@@ -498,7 +507,9 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             }
             else {
                 assert(parent);
-                NodePtr node1(new Node); node1->type = kind; node1->value = record->isNull ? 0 : orc::toDecimalString(buffer[rowId], 5);
+                NodePtr node1(new Node); node1->type = kind;
+                node1->value = (column->hasNulls && !column->notNull[rowId]) ? 0 :
+                                   orc::toDecimalString(buffer[rowId], 5); (column->hasNulls && !column->notNull[rowId]);
                 switch(parent->type) {
                     case orc::MAP: {
                         NodePtr key(new Node); key->type = orc::STRING; key->value = "key";
@@ -516,10 +527,10 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
                     }
                 }
             }
-            std::string value = record->isNull ? std::string("") : orc::toDecimalString(buffer[rowId], 5);
-            DLOG_IF(INFO, rowId < 4) << "DECIMAL col: " << colIndex_ <<
-                                         " rowId: " << rowId <<
-                                         " value: " << value;//TODO hardcoded scale
+//            std::string value = record->isNull ? std::string("") : orc::toDecimalString(buffer[rowId], 5);
+//            DLOG_IF(INFO, rowId < 4) << "DECIMAL col: " << colIndex_ <<
+//                                         " rowId: " << rowId <<
+//                                         " value: " << value;//TODO hardcoded scale
             break;
         }
         case orc::LIST: {
@@ -528,16 +539,16 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             int64_t* buffer = ((orc::ListVectorBatch *)column)->offsets.data();
 
             uint64_t len;
-            if (record->isNull) {
+            if ((column->hasNulls && !column->notNull[rowId])) {
                 len = 0;
             }
             else {
                 len = buffer[rowId + 1] - buffer[rowId];
             }
-            DLOG_IF(INFO, (rowId < 4) ) << "LIST col: " << colIndex_ <<
-                                     " rowId: " << rowId <<
-                                     " list len: " << len <<
-                                            " level: " << nestedLevel;
+//            DLOG_IF(INFO, (rowId < 4) ) << "LIST col: " << colIndex_ <<
+//                                     " rowId: " << rowId <<
+//                                     " list len: " << len <<
+//                                            " level: " << nestedLevel;
 
 
             uint64_t listIndex = colIndex_;
@@ -553,6 +564,7 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             else {
                 node = NodePtr(new Node);
                 node->type = kind;
+                node->isNull = (column->hasNulls && !column->notNull[rowId]);
                 assert(parent);
                 switch(parent->type) {
                     case orc::MAP: {
@@ -595,12 +607,12 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             break;
         }
         case orc::MAP: {
-            DLOG_IF(INFO, (rowId < 4) ) << "MAP col: " << colIndex_ <<
-                                     " rowId: " << rowId <<
-                                            " level: " << nestedLevel;
+//            DLOG_IF(INFO, (rowId < 4) ) << "MAP col: " << colIndex_ <<
+//                                     " rowId: " << rowId <<
+//                                            " level: " << nestedLevel;
             int64_t* buffer = ((orc::MapVectorBatch *)column)->offsets.data();
             uint64_t len;
-            if (record->isNull) {
+            if ((column->hasNulls && !column->notNull[rowId])) {
                 len = 0;
             }
             else {
@@ -627,6 +639,7 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             else {
                 node = NodePtr(new Node);
                 node->type = kind;
+                node->isNull = (column->hasNulls && !column->notNull[rowId]);
                 assert(parent);
                 switch(parent->type) {
                     case orc::MAP: {
@@ -686,8 +699,8 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
 
                 std::pair<NodePtr,NodePtr> pair = std::make_pair(testkey.second, testvalue.second);
                 node->kvpairs.push_back(pair);
-                DLOG_IF(INFO, (rowId < 4)) << "key: " << *(testkey.second.get()) <<
-                              " value: " << *(testvalue.second.get());
+//                DLOG_IF(INFO, (rowId < 4)) << "key: " << *(testkey.second.get()) <<
+//                              " value: " << *(testvalue.second.get());
             }
 
             break;
@@ -698,13 +711,13 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             // TODO get column names and store in the node structure
             //
 
-            DLOG_IF(INFO, (rowId < 4)) << "STRUCT col: " << colIndex_ <<
-                                     " rowId: " << rowId <<
-                                           " level: " << nestedLevel;
+//            DLOG_IF(INFO, (rowId < 4)) << "STRUCT col: " << colIndex_ <<
+//                                     " rowId: " << rowId <<
+//                                           " level: " << nestedLevel;
 
             orc::StructVectorBatch *tmp = (orc::StructVectorBatch*)column;
             uint64_t numChildren;
-            if (record->isNull) {
+            if ((column->hasNulls && !column->notNull[rowId])) {
                 numChildren = 0;
             }
             else {
@@ -726,6 +739,7 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
                 assert(parent);
                 node = NodePtr(new Node);
                 node->type = kind;
+                node->isNull = (column->hasNulls && !column->notNull[rowId]);
                 for(uint64_t i = 0; i < numChildren; ++i) {
                     node->fieldNames.push_back(getColName(colNameIndex_));
                     ++colNameIndex_;
@@ -763,7 +777,7 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
 
             colNameIndex_ = colNameIndexSave;
 
-            DLOG_IF(INFO, (rowId < 4)) << "STRUCT node: " << *(node.get());
+//            DLOG_IF(INFO, (rowId < 4)) << "STRUCT node: " << *(node.get());
             break;
         }
 
@@ -906,7 +920,7 @@ boost::any OrcRecordParser::next()
     }
 
     if((rowIndex_ == 0) ||
-            ((rowIndex_ == numRowsInThisStripe_) && (topColIndex_ == (numTopColumns_ - 1)))) {
+       ((rowIndex_ == numRowsInThisStripe_) && (topColIndex_ == (numTopColumns_ - 1)))) {
 
         if(rowIndex_ == numRowsInThisStripe_) {
             if(!observer_) {
@@ -924,7 +938,8 @@ boost::any OrcRecordParser::next()
         ++topColIndex_;
         colNameIndex_ = colIndexNameResetPoints_[topColIndex_];
         colIndex_ += colsInLastComplexType_;
-        DLOG(INFO) << "Advancing colIndex " << colsInLastComplexType_ << " positions.";
+        DLOG(INFO) << "Advancing colIndex " << colsInLastComplexType_ << " positions. " <<
+                      " current col index: " << colIndex_ << " topcolindex: " << topColIndex_;
         currentColumn_ =
                 ((orc::StructVectorBatch*)(batch_.get()))->fields[topColIndex_];
         if(!observer_) {
@@ -947,6 +962,7 @@ boost::any OrcRecordParser::next()
               record,
               nullNode);
     //traverse(record);
+    DLOG_IF(INFO, (rowIndex_ < 4) )  << "record: " <<  *(record.get());
     boost::any res = record;
 #if 0
     if(record->type == orc::LIST ||
@@ -961,7 +977,6 @@ boost::any OrcRecordParser::next()
 #endif
     colsInLastComplexType_ = colIndex_ - currentCol + 1;
     colIndex_ = currentCol;  //need to reset colIndex_ for complex types
-
     ++rowIndex_;
     return res;
 
@@ -980,17 +995,27 @@ bool OrcRecordParser::hasNext()
 static std::string printNode(const Node& node) {
     std::ostringstream stream;
 
-    stream << " kind: " << node.type;
+    //stream << orc::kind2String(node.type);
     switch(node.type) {
     case orc::BOOLEAN:
     case orc::BYTE:
     case orc::SHORT:
     case orc::INT:
-    case orc::LONG:
-    case orc::FLOAT:
-    case orc::DOUBLE:
-        stream << " int64_t value: "  << boost::get<int64_t>(node.value);
+    case orc::LONG: {
+        if (node.isNull)
+            stream << "NULL";
+        else
+            stream << boost::get<int64_t>(node.value);
         return stream.str();
+    }
+    case orc::FLOAT:
+    case orc::DOUBLE: {
+        if (node.isNull)
+            stream << "NULL";
+        else
+            stream << boost::get<double>(node.value);
+        return stream.str();
+    }
     case orc::BINARY:
     case orc::STRING:
     case orc::DECIMAL:
@@ -998,26 +1023,43 @@ static std::string printNode(const Node& node) {
     case orc::DATE:
     case orc::VARCHAR:
     case orc::CHAR:
-        stream << " string value: " << boost::get<std::string>(node.value);
+        if (node.isNull)
+            stream << "NULL";
+        else
+            stream << "\"" << boost::get<std::string>(node.value) << "\"";
         return stream.str();
     case orc::MAP:
-        stream << " map, number of kvpairs: " << node.kvpairs.size() << std::endl;
-        for(uint64_t i = 0; i < node.kvpairs.size(); ++i) {
-            stream << " key: " << printNode(*(node.kvpairs[i].first.get())) <<
-                      " value: " << printNode(*(node.kvpairs[i].second.get())) << std::endl;
+        if (node.isNull) {
+            stream << "NULL";
+        }
+        else {
+            //stream << "kvpairs: " << node.kvpairs.size() << " -> {";
+            stream << "{";
+            for(uint64_t i = 0; i < node.kvpairs.size(); ++i) {
+                stream << printNode(*(node.kvpairs[i].first.get())) <<
+                          ": " << printNode(*(node.kvpairs[i].second.get())) << ", ";
+            }
+            stream << "}";
         }
         return stream.str();
     case orc::STRUCT:
     case orc::LIST:
-        stream << " struct/list, number of elements: " << node.elements.size() << std::endl;
-        if(node.type == orc::STRUCT) {
-            for(uint64_t i = 0; i < node.fieldNames.size(); ++i) {
-                stream << node.fieldNames[i] << ",";
-            }
-            stream << std::endl;
+        if (node.isNull) {
+            stream << "NULL";
         }
-        for(uint64_t i = 0; i < node.elements.size(); ++i) {
-            stream << printNode(*(node.elements[i].get())) << std::endl;
+        else {
+//            stream << " elements: " << node.elements.size() << " -> [";
+            stream << "[";
+//            if(node.type == orc::STRUCT) {
+//                for(uint64_t i = 0; i < node.fieldNames.size(); ++i) {
+//                    stream << node.fieldNames[i] << ",";
+//                }
+//                stream << std::endl;
+//            }
+            for(uint64_t i = 0; i < node.elements.size(); ++i) {
+                stream << printNode(*(node.elements[i].get())) << ", ";
+            }
+            stream << "]";
         }
         return stream.str();
     default:  {
