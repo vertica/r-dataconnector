@@ -241,13 +241,14 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
                   boost::get<std::string>(node->value) <<
                           " addr: " << &(node->value) <<
                   ", level: " <<  level;
-            if (node->isNull) return NA_STRING;
-            else {
-                SEXP tmp = PROTECT(Rf_allocVector(STRSXP, 1));
+
+            SEXP tmp = PROTECT(Rf_allocVector(STRSXP, 1));
+            if (node->isNull)
+                SET_STRING_ELT(tmp, 0, NA_STRING);
+            else
                 SET_STRING_ELT(tmp, 0, Rf_mkCharCE(boost::get<std::string>(node->value).c_str(),  CE_UTF8));
-                UNPROTECT(1);
-                return tmp;
-            }
+            UNPROTECT(1);
+            return tmp;
         }
         case orc::MAP: {
             int len = node->kvpairs.size();
@@ -526,16 +527,17 @@ void RDataFrameAssembler::handleOrcRecord(boost::any& record)
 
             //TODO this assumes string keys
             Rcpp::DataFrame map;
-            Rcpp::CharacterVector keys;
+
+            Rcpp::List keys;
             Rcpp::List values;
 
             for(int i = 0; i < len; ++i) {
-                std::string key = boost::get<std::string>(((node->kvpairs[i]).first)->value);
-                keys.push_back(key);
+                keys.push_back(ParseValue((node->kvpairs[i]).first,0));
                 values.push_back(ParseValue((node->kvpairs[i]).second,0));
             }
 
             map["key"] = keys;
+
 
             bool mapValueIsStruct = false;
             if(len > 0) {
