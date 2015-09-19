@@ -200,7 +200,8 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
                           boost::get<int64_t>(node->value) <<
                           " addr: " << &(node->value) <<
                           ", level: " <<  level;
-            return Rf_ScalarLogical(static_cast<bool>(boost::get<int64_t>(node->value)));
+            if (node->isNull) return Rf_ScalarLogical(NA_LOGICAL);
+            else return Rf_ScalarLogical(static_cast<bool>(boost::get<int64_t>(node->value)));
         }
         case orc::BYTE:
         case orc::SHORT:
@@ -209,14 +210,16 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
                       boost::get<int64_t>(node->value) <<
                           " addr: " << &(node->value) <<
                       ", level: " <<  level;
-            return Rf_ScalarInteger(static_cast<int32_t>(boost::get<int64_t>(node->value)));
+            if (node->isNull) return Rf_ScalarInteger(NA_INTEGER);
+            else return Rf_ScalarInteger(static_cast<int32_t>(boost::get<int64_t>(node->value)));
         }
         case orc::LONG: {
             DLOG(INFO) << "returning LONG: " <<
                       boost::get<int64_t>(node->value) <<
                           " addr: " << &(node->value) <<
                       ", level: " <<  level;
-            return Rf_ScalarReal(static_cast<double>(boost::get<int64_t>(node->value)));
+            if (node->isNull) return Rf_ScalarReal(NA_REAL);
+            else return Rf_ScalarReal(static_cast<double>(boost::get<int64_t>(node->value)));
         }
         case orc::FLOAT:
         case orc::DOUBLE:{
@@ -224,7 +227,8 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
                   boost::get<double>(node->value) <<
                           " addr: " << &(node->value) <<
                   ", level: " <<  level;
-            return Rf_ScalarReal((double)(boost::get<double>(node->value)));
+            if (node->isNull) return Rf_ScalarReal(NA_REAL);
+            else return Rf_ScalarReal((double)(boost::get<double>(node->value)));
         }
         case orc::BINARY:
         case orc::STRING:
@@ -237,10 +241,13 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
                   boost::get<std::string>(node->value) <<
                           " addr: " << &(node->value) <<
                   ", level: " <<  level;
-            SEXP tmp = PROTECT(Rf_allocVector(STRSXP, 1));
-            SET_STRING_ELT(tmp, 0, Rf_mkCharCE(boost::get<std::string>(node->value).c_str(),  CE_UTF8));
-            UNPROTECT(1);
-            return tmp;
+            if (node->isNull) return NA_STRING;
+            else {
+                SEXP tmp = PROTECT(Rf_allocVector(STRSXP, 1));
+                SET_STRING_ELT(tmp, 0, Rf_mkCharCE(boost::get<std::string>(node->value).c_str(),  CE_UTF8));
+                UNPROTECT(1);
+                return tmp;
+            }
         }
         case orc::MAP: {
             int len = node->kvpairs.size();
