@@ -5,6 +5,10 @@ ddc_write <- function(object, url, options) {
     .Call('hdfsconnector_ddc_write', PACKAGE = 'hdfsconnector', object, url, options)
 }
 
+schema2colnames <- function(schema) {
+    .Call('hdfsconnector_schema2colnames', PACKAGE = 'hdfsconnector', schema)
+}
+
 ddc_read <- function(url, options) {
     .Call('hdfsconnector_ddc_read', PACKAGE = 'hdfsconnector', url, options)
 }

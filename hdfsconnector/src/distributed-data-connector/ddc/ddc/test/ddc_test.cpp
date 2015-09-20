@@ -285,6 +285,15 @@ TEST_F(DdcTest, ParseSchema) {
     EXPECT_EQ(refSchema, schema);
 }
 
+TEST_F(DdcTest, schema2str) {
+    CsvSchema schema;
+    schema[0] = std::make_pair("a", "int64");
+    schema[1] = std::make_pair("b", "character");
+    std::string refSchemaStr = "a:int64,b:character";
+    std::string schemaStr = schema2string(schema);
+    EXPECT_EQ(schemaStr, refSchemaStr);
+}
+
 struct SimpleCsvConfig {
     SimpleCsvConfig(const std::string& _filename,
                     const std::string& _schema,

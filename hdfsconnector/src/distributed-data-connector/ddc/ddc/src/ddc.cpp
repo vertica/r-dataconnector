@@ -25,7 +25,18 @@ void intHandler(int dummy=0) {
     stopDdc = true;
 }
 
-std::map<int32_t, std::pair<std::string,std::string> > parseSchema(const std::string& schema) {
+
+std::string schema2string(const CsvSchema& schema) {
+    std::string schemaStr;
+    for (CsvSchemaConstIt it = schema.begin(); it != schema.end(); ++it) {
+        std::string colName = it->second.first;
+        std::string colType = it->second.second;
+        schemaStr += (colName + ":" + colType + ",");
+    }
+    return schemaStr.substr(0, schemaStr.size() - 1);
+}
+
+CsvSchema parseSchema(const std::string& schema) {
     //TODO implement better schemas like this one
     /*
      * EXAMPLE 1: Simple CSV Schema
@@ -36,7 +47,7 @@ std::map<int32_t, std::pair<std::string,std::string> > parseSchema(const std::st
      * gender: is("m") or is("f") or is("t") or is("n")
      */
 
-    std::map<int32_t, std::pair<std::string, std::string> > res;
+    CsvSchema res;
 
     std::vector<std::string> strs;
     //age:int32_t,name:string --> [age:int32_t, name:string]
@@ -51,6 +62,18 @@ std::map<int32_t, std::pair<std::string,std::string> > parseSchema(const std::st
             throw std::runtime_error("error parsing schema");
         }
         res[i] = std::make_pair(column[0], column[1]);
+    }
+    return res;
+}
+
+
+std::vector<std::string> schema2colnames(const std::string &schema) {
+    CsvSchema sc = parseSchema(schema);
+    std::vector<std::string> res;
+    for (CsvSchemaIt it = sc.begin(); it != sc.end(); ++it) {
+        std::string colName = it->second.first;
+        //std::string colType = it->second.second;
+        res.push_back(colName);
     }
     return res;
 }

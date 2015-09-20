@@ -18,6 +18,17 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// schema2colnames
+std::vector<std::string> schema2colnames(const std::string& schema);
+RcppExport SEXP hdfsconnector_schema2colnames(SEXP schemaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const std::string& >::type schema(schemaSEXP);
+    __result = Rcpp::wrap(schema2colnames(schema));
+    return __result;
+END_RCPP
+}
 // ddc_read
 Rcpp::DataFrame ddc_read(const std::string& url, const Rcpp::List& options);
 RcppExport SEXP hdfsconnector_ddc_read(SEXP urlSEXP, SEXP optionsSEXP) {

@@ -27,6 +27,9 @@ void ddc_write(const std::string& url,
                const std::string& bytes,
                base::ConfigurationMap& conf);
 
+std::vector<std::string> schema2colnames(const std::string &schema);
+
+
 namespace scheduler {
 
     class WorkerInfo {
@@ -190,6 +193,11 @@ static base::ConfigurationMap list2conf(const Rcpp::List& options) {
         //PASS
     }
     return conf;
+}
+
+// [[Rcpp::export]]
+std::vector<std::string> schema2colnames(const std::string& schema) {
+    return ddc::schema2colnames(schema);
 }
 
 // [[Rcpp::export]]

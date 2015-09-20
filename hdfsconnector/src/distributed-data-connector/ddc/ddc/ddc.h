@@ -15,9 +15,15 @@
 
 namespace ddc {
 
+    typedef std::map<int32_t, std::pair<std::string,std::string> > CsvSchema;
+    typedef std::map<int32_t, std::pair<std::string,std::string> >::iterator CsvSchemaIt;
+    typedef std::map<int32_t, std::pair<std::string,std::string> >::const_iterator CsvSchemaConstIt;
 
-std::map<int32_t, std::pair<std::string, std::string> > parseSchema(const std::string& schema);
-boost::any ddc_read(const std::string &url,
+    CsvSchema parseSchema(const std::string& schema);
+    std::string schema2string(const CsvSchema& schema);
+    std::vector<std::string> schema2colnames(const std::string& schema);
+
+    boost::any ddc_read(const std::string &url,
                     const std::string& objectType,
                     base::ConfigurationMap& conf);
 
