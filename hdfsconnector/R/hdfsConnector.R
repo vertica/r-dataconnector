@@ -249,6 +249,7 @@ object2hdfs <- function(object, url, overwrite=FALSE,
     }
     ret <- tryCatch({
             ddc_write(object, url, options)
+            TRUE
         }, error=function(e) {
             stop(e)
         }, finally = {
