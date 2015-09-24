@@ -65,6 +65,9 @@ public:
 
     void update(int32_t level);
 
+    std::vector<std::string> columnNames() const;
+    //void setColumnNames(const std::vector<std::string> &columnNames);
+
 private:
     /**
      * @brief configureOrc
@@ -213,6 +216,9 @@ private:
      * colIndex, rowIndex
      */
     std::map<uint64_t, std::vector<uint64_t> > nullStrings_;
+
+    bool needUnprotect_;
+    uint64_t numProtects_;
 
 };
 

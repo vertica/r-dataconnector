@@ -12,12 +12,17 @@ RDataFrameAssembler::RDataFrameAssembler() :
     recordsAssembled_(0),
     splitsAssembled_(0),
     numColsInLastRow_(-1),
-    configured_(false)
+    configured_(false),
+    needUnprotect_(false),
+    numProtects_(0)
 {
 }
 
 RDataFrameAssembler::~RDataFrameAssembler()
 {
+    if (needUnprotect_) {
+        UNPROTECT(numProtects_);
+    }
 }
 
 void RDataFrameAssembler::configure(base::ConfigurationMap &conf)
@@ -174,6 +179,7 @@ void RDataFrameAssembler::configureOrc()
             columnTypes_.push_back(ORC_LIST_COL);
             SEXP col = PROTECT(Rf_allocVector(VECSXP, numRows_));
             columns_.push_back(col);
+            ++numProtects_;
             break;
         }
         default : {
@@ -181,6 +187,7 @@ void RDataFrameAssembler::configureOrc()
         }
         }
     }
+    needUnprotect_ = true;
 }
 
 /**
@@ -383,6 +390,16 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
         }
     }
 }
+std::vector<std::string> RDataFrameAssembler::columnNames() const
+{
+    return columnNames_;
+}
+
+//void RDataFrameAssembler::setColumnNames(const std::vector<std::string> &columnNames)
+//{
+//    columnNames_ = columnNames;
+//}
+
 
 /**
  * Functions to create R dataframes and lists
@@ -886,6 +903,7 @@ boost::any RDataFrameAssembler::getObject()
             }
         }
         UNPROTECT(columns_.size());  // this also accounts for the creation of list-type columns in configureOrc()
+        needUnprotect_ = false;
         Rcpp::StringVector rownames(numRows_);
         for(uint64_t i = 0; i < numRows_; ++i) {
             rownames[i] = base::utils::to_string(i+1);

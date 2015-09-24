@@ -10,6 +10,7 @@
 #include <Rcpp.h>
 
 #include "assembler/assemblerfactory.h"
+#include "assembler/rdataframeassembler.h"
 #include "blockreader/blockreaderfactory.h"
 #include "ddc/globals.h"
 #include "hdfsutils/filefactory.h"
@@ -75,6 +76,28 @@ std::vector<std::string> schema2colnames(const std::string &schema) {
         //std::string colType = it->second.second;
         res.push_back(colName);
     }
+    return res;
+}
+
+std::vector<std::string> orccolnames(const std::string& url,
+                                     const std::string& hdfsConfigurationFile) {
+    base::ConfigurationMap conf;
+    conf["url"] = url;
+    conf["hdfsConfigurationFile"] = hdfsConfigurationFile;
+    std::vector<uint64_t> stripes;
+    conf["selectedStripes"] = stripes;
+    recordparser::IRecordParserPtr p = boost::shared_ptr<recordparser::IRecordParser>(new recordparser::OrcRecordParser());
+    p->configure(conf);
+
+    assembler::RDataFrameAssembler a;
+    base::ConfigurationMap conf2;
+    conf2["url"] = url;
+    conf2["hdfsConfigurationFile"] = hdfsConfigurationFile;
+    conf2["format"] = std::string("row");
+    conf2["recordParser"] = p;
+    a.configure(conf2);
+
+    std::vector<std::string> res = a.columnNames();
     return res;
 }
 

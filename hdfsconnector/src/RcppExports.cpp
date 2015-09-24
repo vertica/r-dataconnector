@@ -29,6 +29,18 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// orccolnames
+std::vector<std::string> orccolnames(const std::string& url, const std::string& hdfsConfigurationFile);
+RcppExport SEXP hdfsconnector_orccolnames(SEXP urlSEXP, SEXP hdfsConfigurationFileSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const std::string& >::type url(urlSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type hdfsConfigurationFile(hdfsConfigurationFileSEXP);
+    __result = Rcpp::wrap(orccolnames(url, hdfsConfigurationFile));
+    return __result;
+END_RCPP
+}
 // ddc_read
 Rcpp::DataFrame ddc_read(const std::string& url, const Rcpp::List& options);
 RcppExport SEXP hdfsconnector_ddc_read(SEXP urlSEXP, SEXP optionsSEXP) {

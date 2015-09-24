@@ -9,6 +9,10 @@ schema2colnames <- function(schema) {
     .Call('hdfsconnector_schema2colnames', PACKAGE = 'hdfsconnector', schema)
 }
 
+orccolnames <- function(url, hdfsConfigurationFile) {
+    .Call('hdfsconnector_orccolnames', PACKAGE = 'hdfsconnector', url, hdfsConfigurationFile)
+}
+
 ddc_read <- function(url, options) {
     .Call('hdfsconnector_ddc_read', PACKAGE = 'hdfsconnector', url, options)
 }
