@@ -1,7 +1,7 @@
 Package: hdfsconnector
 Type: Package
 Title: Read CSV and ORC files from HDFS or the local file system.
-Version: 1.0.0
+Version: 1.2.0
 Date: 2015-09-04
 Author: HP Vertica Analytics Team 
 Maintainer: HP Vertica Analytics Team <distributedRTeam@external.groups.hp.com> 
