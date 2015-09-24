@@ -930,7 +930,7 @@ boost::any RDataFrameAssembler::getObject()
                 std::ostringstream os;
                 os << "Unsupported type ";
                 os << columnType;
-                os << ". Supported types are bool, integer, int64, numeric and character.";
+                os << ". Supported types are logical, integer, int64, numeric and character.";
                 throw std::runtime_error(os.str());
             }
             // initialize nullBools_ and nullStrings_
