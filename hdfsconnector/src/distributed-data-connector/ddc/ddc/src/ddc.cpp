@@ -183,6 +183,10 @@ boost::any ddc_read(const std::string &url,
     uint64_t chunkEnd = 0;
     try {
         chunkEnd = boost::any_cast<uint64_t>(conf["chunkEnd"]);
+        if (chunkEnd == -1) {
+            LOG(INFO) << "chunkEnd unspecified. Defaulting to file size.";
+            chunkEnd = status.length;
+        }
     }
     catch(...) {
 #if 0

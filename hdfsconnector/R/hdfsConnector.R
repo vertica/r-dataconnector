@@ -45,9 +45,6 @@ NULL
 #'                }
 #' @param delimiter Column separator. Example: delimiter='|'. By default delimiter is ','.
 #' @param commentCharacter Discard lines starting with this character. Leading spaces are ignored.
-#' @param fileType File type is determined automatically by the file extension.
-#'
-#'                 Users can use fileType to override it. Useful when files don't have extensions.
 #' @param hdfsConfigurationFile By default: \code{paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')}.
 #'
 #'                              Options are:
@@ -69,16 +66,29 @@ NULL
 #'
 #' @param hdfsConfigurationStr HDFS configuration in string format. Useful for Distributed R. 
 #'                             Normally users specify hdfsConfigurationFile instead of hdfsConfigurationStr.
+#' @param chunkStart Byte offset in the file to start parsing. Defaults to 0.
+#' @param chunkEnd Byte offset in the file to stop parsing. Defaults to file size.
 #' @return A dataframe representing the CSV file.
 #' @examples
 #' df <- csv2dataframe(url=paste(system.file(package='hdfsconnector'),'/tests/testthat/data/csv/ex001.csv',sep=''), schema='a:int64,b:string')
 
-csv2dataframe <- function(url, ...) {
-    options = list(...)
-    if(!("hdfsConfigurationFile" %in% names(options))) {
-        # set default hdfsConfigurationFile
-        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
-    }
+csv2dataframe <- function(url, schema, delimiter=',', commentCharacter='#',
+                          hdfsConfigurationFile=paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep=''),
+                          hdfsConfigurationStr='',
+                          chunkStart=0, chunkEnd=-1) {
+    options = list()
+    options['schema'] = schema
+    options['delimiter'] = delimiter
+    options['commentCharacter'] = commentCharacter
+    options['hdfsConfigurationFile'] = hdfsConfigurationFile
+    options['hdfsConfigurationStr'] = hdfsConfigurationStr
+    options['chunkStart'] = chunkStart
+    options['chunkEnd'] = chunkEnd
+
+#    if(!("hdfsConfigurationFile" %in% names(options))) {
+#        # set default hdfsConfigurationFile
+#        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
+#    }
 
     tmpfilename <- ''
     if(("hdfsConfigurationStr" %in% names(options))) {
@@ -125,9 +135,6 @@ csv2dataframe <- function(url, ...) {
 #'
 #' @param url File URL. Examples: '/tmp/file.orc', 'hdfs:///file.orc'.
 #' @param selectStripes ORC stripes to include. Stripes need to be consecutive.
-#' @param fileType File type is determined automatically by the file extension.
-#'
-#'                 Users can use fileType to override it. Useful when files don't have extensions.
 #' @param hdfsConfigurationFile By default: \code{paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')}.
 #'
 #'                              Options are:
@@ -152,13 +159,18 @@ csv2dataframe <- function(url, ...) {
 #' @examples
 #' df <- orc2dataframe(url=paste(system.file(package='hdfsconnector'),'/tests/testthat/data/orc/TestOrcFile.test1.orc',sep=''))
 
-orc2dataframe <- function(url, ...) {
-    options = list(...)
+orc2dataframe <- function(url, selectedStripes='',
+                          hdfsConfigurationFile=paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep=''),
+                          hdfsConfigurationStr='' ) {
+    options = list()
+    options['selectedStripes'] = selectedStripes
+    options['hdfsConfigurationFile'] = hdfsConfigurationFile
+    options['hdfsConfigurationStr'] = hdfsConfigurationStr
 
-    if(!("hdfsConfigurationFile" %in% names(options))) {
-        # set default hdfsConfigurationFile
-        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
-    }
+#    if(!("hdfsConfigurationFile" %in% names(options))) {
+#        # set default hdfsConfigurationFile
+#        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
+#    }
 
     tmpfilename <- ''
     if("hdfsConfigurationStr" %in% names(options)) {
@@ -214,13 +226,18 @@ orc2dataframe <- function(url, ...) {
 #' @examples
 #' str <- "hello world"; object2hdfs(str, '/tmp/file.txt')
 
-object2hdfs <- function(object, url, ...) {
-    options = list(...)
+object2hdfs <- function(object, url, overwrite=FALSE,
+                        hdfsConfigurationFile=paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep=''),
+                        hdfsConfigurationStr='') {
+    options = list()
+    options['overwrite'] = overwrite
+    options['hdfsConfigurationFile'] = hdfsConfigurationFile
+    options['hdfsConfigurationStr'] = hdfsConfigurationStr
 
-    if(!("hdfsConfigurationFile" %in% names(options))) {
-        # set default hdfsConfigurationFile
-        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
-    }
+#    if(!("hdfsConfigurationFile" %in% names(options))) {
+#        # set default hdfsConfigurationFile
+#        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
+#    }
 
     tmpfilename <- ''
     if("hdfsConfigurationStr" %in% names(options)) {
