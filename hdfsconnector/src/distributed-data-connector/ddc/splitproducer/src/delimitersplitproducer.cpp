@@ -19,7 +19,8 @@ DelimiterSplitProducer::DelimiterSplitProducer()
        splitsProduced_(0),
        delimiter_('\n'),
        configured_(false),
-       skipRecord_(false)
+       skipRecord_(false),
+       skipHeader_(false)
 {
 }
 
@@ -52,6 +53,9 @@ void DelimiterSplitProducer::configure(base::ConfigurationMap& conf)
         offsetInBlock_ = (offset_ > numBytes) ? numBytes - 1 : offset_ - 1;
         offset_ -= 1;//backtrack 1 to detect if we're in the middle of a record
         skipRecord_ = true;
+    }
+    else {
+        GET_PARAMETER(skipHeader_,bool,"skipHeader");
     }
     configured_ = true;
 
@@ -134,6 +138,14 @@ SplitPtr DelimiterSplitProducer::next()
                 split_.clear();
                 //continues below ...
             }
+            else if(skipHeader_) {
+                //discard header
+                DLOG(INFO) << "skippping header: " << split_;
+                skipHeader_ = false;
+                splitsDiscarded_++;
+                split_.clear();
+                //continues below ...
+            }
             else {
                  SplitPtr res = SplitPtr(new Split(boost::shared_ptr<std::string>(new std::string(split_))));
                  DLOG_IF(INFO, splitsProduced_ < 10) << "returning split: " << split_;
@@ -149,7 +161,7 @@ SplitPtr DelimiterSplitProducer::next()
         }
 
     } // while((offset_ < splitEnd_) || (inLastRecord && offset_ < fileEnd_)) {
-    if((split_.size() > 0) && !skipRecord_) {
+    if((split_.size() > 0) && !skipRecord_ && !skipHeader_) {
         SplitPtr res = SplitPtr(new Split(boost::shared_ptr<std::string>(new std::string(split_))));
         DLOG(INFO) << "returning record: " << split_;
         split_.clear();

@@ -194,6 +194,14 @@ static base::ConfigurationMap list2conf(const Rcpp::List& options) {
     catch(...) {
         //PASS
     }
+    bool skipHeader = false;
+    try {
+        skipHeader =  Rcpp::as<bool>(options["skipHeader"]);
+        conf["skipHeader"] = skipHeader;
+    }
+    catch(...) {
+        //PASS
+    }
     return conf;
 }
 

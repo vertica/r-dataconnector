@@ -246,6 +246,14 @@ boost::any ddc_read(const std::string &url,
         // if selectedStripes is empty we'll read all the stripes
     }
 
+    bool skipHeader = false;
+    try {
+        skipHeader = boost::any_cast<bool>(conf["skipHeader"]);
+    }
+    catch(...) {
+
+    }
+
     base::ConfigurationMap splitProducerConf;
     if(extension == "csv") { //delimiter based splitters
         splitProducerConf["splitStart"] = static_cast<uint64_t>(chunkStart);
@@ -262,6 +270,8 @@ boost::any ddc_read(const std::string &url,
     //common
     splitProducerConf["blockReader"] = static_cast<blockreader::IBlockReaderPtr>(blockReader);
     splitProducerConf["fileEnd"] = static_cast<uint64_t>(status.length);
+    splitProducerConf["fileEnd"] = static_cast<uint64_t>(status.length);
+    splitProducerConf["skipHeader"] = skipHeader;
     splitProducer->configure(splitProducerConf);
 
     base::ConfigurationMap recordParserConf;

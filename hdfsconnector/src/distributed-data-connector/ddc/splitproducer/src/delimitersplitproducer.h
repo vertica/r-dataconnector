@@ -37,6 +37,7 @@ private:
 
     bool configured_;
     bool skipRecord_;
+    bool skipHeader_;
 
 
 };

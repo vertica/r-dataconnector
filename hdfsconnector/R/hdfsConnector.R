@@ -68,6 +68,7 @@ NULL
 #'                             Normally users specify hdfsConfigurationFile instead of hdfsConfigurationStr.
 #' @param chunkStart Byte offset in the file to start parsing. Defaults to 0.
 #' @param chunkEnd Byte offset in the file to stop parsing. Defaults to file size.
+#' @param skipHeader Treat first line as the CSV header and discard it.
 #' @return A dataframe representing the CSV file.
 #' @examples
 #' df <- csv2dataframe(url=paste(system.file(package='hdfsconnector'),'/tests/testthat/data/csv/ex001.csv',sep=''), schema='a:int64,b:string')
@@ -75,7 +76,8 @@ NULL
 csv2dataframe <- function(url, schema, delimiter=',', commentCharacter='#',
                           hdfsConfigurationFile=paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep=''),
                           hdfsConfigurationStr='',
-                          chunkStart=0, chunkEnd=-1) {
+                          chunkStart=0, chunkEnd=-1,
+                          skipHeader=FALSE) {
     options = list()
     options['schema'] = schema
     options['delimiter'] = delimiter
@@ -84,6 +86,7 @@ csv2dataframe <- function(url, schema, delimiter=',', commentCharacter='#',
     options['hdfsConfigurationStr'] = hdfsConfigurationStr
     options['chunkStart'] = chunkStart
     options['chunkEnd'] = chunkEnd
+    options['skipHeader'] = skipHeader
 
 #    if(!("hdfsConfigurationFile" %in% names(options))) {
 #        # set default hdfsConfigurationFile
