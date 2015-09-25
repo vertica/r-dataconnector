@@ -101,8 +101,19 @@ size_t HdfsFile::write(void *buffer, const size_t nbytes) {
     d.buffer = buffer;
     d.nbytes = nbytes;
     int res;
-    if (res = webhdfs_file_create(fs_, filename_.c_str(), overwrite_, __upload_func, &d)) {
-        throw std::runtime_error("Error writing file");
+    char *error = NULL;
+    if (res = webhdfs_file_create(fs_, filename_.c_str(), overwrite_, __upload_func, &d, &error)) {
+        std::ostringstream os;
+        os << "Error writing file: " << std::string(error);
+        if (error) {
+            free(error);
+            error = NULL;
+        }
+        throw std::runtime_error(os.str());
+    }
+    if (error) {
+        free(error);
+        error = NULL;
     }
     return nbytes;  // on success return nbytes
 }

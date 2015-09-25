@@ -2,6 +2,7 @@
 #define DDC_HDFSUTILS_HDFSFILE_H
 
 #include <stdio.h>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <boost/shared_ptr.hpp>
