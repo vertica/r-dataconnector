@@ -83,7 +83,9 @@ csv2dataframe <- function(url, schema, delimiter=',', commentCharacter='#',
     options['delimiter'] = delimiter
     options['commentCharacter'] = commentCharacter
     options['hdfsConfigurationFile'] = hdfsConfigurationFile
-    options['hdfsConfigurationStr'] = hdfsConfigurationStr
+    if (hdfsConfigurationStr != '') {
+        options['hdfsConfigurationStr'] = hdfsConfigurationStr
+    }
     options['chunkStart'] = chunkStart
     options['chunkEnd'] = chunkEnd
     options['skipHeader'] = skipHeader
@@ -168,7 +170,9 @@ orc2dataframe <- function(url, selectedStripes='',
     options = list()
     options['selectedStripes'] = selectedStripes
     options['hdfsConfigurationFile'] = hdfsConfigurationFile
-    options['hdfsConfigurationStr'] = hdfsConfigurationStr
+    if (hdfsConfigurationStr != '') {
+        options['hdfsConfigurationStr'] = hdfsConfigurationStr
+    }
 
 #    if(!("hdfsConfigurationFile" %in% names(options))) {
 #        # set default hdfsConfigurationFile
@@ -235,7 +239,9 @@ object2hdfs <- function(object, url, overwrite=FALSE,
     options = list()
     options['overwrite'] = overwrite
     options['hdfsConfigurationFile'] = hdfsConfigurationFile
-    options['hdfsConfigurationStr'] = hdfsConfigurationStr
+    if (hdfsConfigurationStr != '') {
+        options['hdfsConfigurationStr'] = hdfsConfigurationStr
+    }
 
 #    if(!("hdfsConfigurationFile" %in% names(options))) {
 #        # set default hdfsConfigurationFile
