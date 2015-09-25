@@ -134,6 +134,8 @@ TEST_P(SplitProducerTest, Generic)
 
   conf["offsets"] = p.offsets;
 
+  conf["skipHeader"] = false;
+
   s->configure(conf);
 
   std::vector<boost::shared_ptr<Split> > splits;

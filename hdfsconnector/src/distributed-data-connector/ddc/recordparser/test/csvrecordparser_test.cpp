@@ -139,6 +139,7 @@ TEST_P(CsvRecordParserParamTest, Generic){
     splitProducerConf["splitEnd"] = file.stat().length;
     splitProducerConf["fileEnd"] = file.stat().length;
     splitProducerConf["blockReader"] = b;
+    splitProducerConf["skipHeader"] = false;
     s->configure(splitProducerConf);
 
     base::ConfigurationMap recordParserConf;
