@@ -1,6 +1,6 @@
 {
     "webhdfsPort": 50070,
     "hdfsPort": 9000,
-    "hdfsHost": "172.17.0.3",
-    "hdfsUser": "jorgem"
+    "hdfsHost": "FILLME",
+    "hdfsUser": "FILLME"
 }
