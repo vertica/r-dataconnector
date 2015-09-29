@@ -95,6 +95,7 @@ std::vector<std::string> orccolnames(const std::string& url,
     conf2["hdfsConfigurationFile"] = hdfsConfigurationFile;
     conf2["format"] = std::string("row");
     conf2["recordParser"] = p;
+    conf2["fileType"] = std::string("orc");
     a.configure(conf2);
 
     std::vector<std::string> res = a.columnNames();
