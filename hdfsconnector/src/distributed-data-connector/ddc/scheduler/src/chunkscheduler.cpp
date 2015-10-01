@@ -64,6 +64,22 @@ Plan ChunkScheduler::schedule() {
     std::vector<Chunk> chunks;
     std::vector<base::ConfigurationMap> configurations;
 
+    std::vector<std::string> files;
+    if (hdfsutils::isHdfs(protocol)) {
+        hdfsutils::HdfsGlobber globber;
+        base::ConfigurationMap conf;
+        conf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+        globber.configure(conf);
+        files = globber.glob(filename);
+    }
+    else {
+        files = base::utils::globpp(filename);
+    }
+
+    if (files.empty()) {
+        throw std::runtime_error("List of files to read is empty. Make sure the files exist.");
+    }
+
     if (extension_ == "csv") {
         //
         // for CSV we split the file in as many chunks as workers
@@ -75,61 +91,49 @@ Plan ChunkScheduler::schedule() {
         }
 
         uint64_t numPartitions = numExecutors;
-
-        std::vector<std::string> files;
-        if (hdfsutils::isHdfs(protocol)) {
-            hdfsutils::HdfsGlobber globber;
-            base::ConfigurationMap conf;
-            conf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
-            globber.configure(conf);
-            files = globber.glob(filename);
-        }
-        else {
-            files = base::utils::globpp(filename);            
-        }
-        if (files.empty()) {
-            throw std::runtime_error("List of files to read is empty. Make sure the files exist.");
-        }
         divide(numPartitions, files, protocol, chunks, configurations);
     }
+
     else if (extension_ == "orc") {
-        std::unique_ptr<orc::Reader> orcReader;
-        orc::ReaderOptions opts;
-        if (hdfsutils::isHdfs(protocol)) {
-            hdfsutils::HdfsInputStream *p = new hdfsutils::HdfsInputStream(filename);
-            base::ConfigurationMap hdfsconf;
-            hdfsconf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
-            p->configure(hdfsconf);
-            std::unique_ptr<orc::InputStream> inputStream(p);
-            orcReader = orc::createReader(std::move(inputStream), opts);
+        for (uint64_t i = 0; i < files.size(); ++i) {
+            std::string f = files[i];
+            std::unique_ptr<orc::Reader> orcReader;
+            orc::ReaderOptions opts;
+            if (hdfsutils::isHdfs(protocol)) {
+                hdfsutils::HdfsInputStream *p = new hdfsutils::HdfsInputStream(f);
+                base::ConfigurationMap hdfsconf;
+                hdfsconf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+                p->configure(hdfsconf);
+                std::unique_ptr<orc::InputStream> inputStream(p);
+                orcReader = orc::createReader(std::move(inputStream), opts);
+            }
+            else {
+                orcReader = orc::createReader(orc::readLocalFile(f), opts);
+            }
+
+            for (uint64_t i = 0; i < orcReader->getNumberOfStripes(); ++i) {
+                // get stripe offsets
+                std::unique_ptr<orc::StripeInformation> stripeInfo = orcReader->getStripe(i);
+                uint64_t offset = stripeInfo->getOffset();
+                uint64_t length = stripeInfo->getLength();
+    //            uint64_t indexLength = stripeInfo->getIndexLength();
+    //            uint64_t dataLength = stripeInfo->getDataLength();
+    //            uint64_t footerLength = stripeInfo->getFooterLength();
+                Chunk c;
+                c.id = i;
+                c.start = offset;
+                c.end = offset + length;
+                c.protocol = protocol;
+                c.filename = f;
+                chunks.push_back(c);
+
+                base::ConfigurationMap conf;
+                conf["selectedStripes"] = base::utils::to_string(i);
+                conf["url"] = fileUrl_;
+
+                configurations.push_back(conf);
+            }
         }
-        else {
-            orcReader = orc::createReader(orc::readLocalFile(filename), opts);
-        }
-
-        for (uint64_t i = 0; i < orcReader->getNumberOfStripes(); ++i) {
-            // get stripe offsets
-            std::unique_ptr<orc::StripeInformation> stripeInfo = orcReader->getStripe(i);
-            uint64_t offset = stripeInfo->getOffset();
-            uint64_t length = stripeInfo->getLength();
-//            uint64_t indexLength = stripeInfo->getIndexLength();
-//            uint64_t dataLength = stripeInfo->getDataLength();
-//            uint64_t footerLength = stripeInfo->getFooterLength();
-            Chunk c;
-            c.id = i;
-            c.start = offset;
-            c.end = offset + length;
-            c.protocol = protocol;
-            c.filename = filename;
-            chunks.push_back(c);
-
-            base::ConfigurationMap conf;
-            conf["selectedStripes"] = base::utils::to_string(i);
-            conf["url"] = fileUrl_;
-
-            configurations.push_back(conf);
-        }
-
     }
     else {
         throw std::runtime_error("Unsupported file type or cannot determine extension");
