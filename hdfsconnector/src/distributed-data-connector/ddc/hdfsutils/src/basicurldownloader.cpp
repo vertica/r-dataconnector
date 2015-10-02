@@ -83,7 +83,7 @@ static int onProgressUpdate(void *p,
     if((dlnow2 != 0) && (dltotal2 != 0)) {
         float percentage = 100 * (float)dlnow2/(float)dltotal2;
         if((percentage - myp->lastpercentage) >= 1.0) {
-            LOG(INFO) <<  boost::format("Completed %3.2f%%\r")  % (percentage);
+            DLOG(INFO) <<  boost::format("Completed %3.2f%%\r")  % (percentage);
             myp->lastpercentage = percentage;
         }
     }
