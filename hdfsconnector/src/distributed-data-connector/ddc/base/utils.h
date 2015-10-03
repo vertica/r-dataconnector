@@ -54,7 +54,10 @@ namespace utils {
     std::string hostnameToIpAddress(const std::string& hostname);
 
 
+
 }  // namespace utils
 }  // namespace base
+
+std::ostream &operator<<(std::ostream &stream, const std::vector<uint64_t> &v);
 
 #endif // BASE_UTILS_H

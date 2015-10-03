@@ -228,3 +228,10 @@ std::string hostnameToIpAddress(const std::string &hostname)
 
 } //namespace utils
 } //namespace base
+
+
+std::ostream &operator<<(std::ostream &stream, const std::vector<uint64_t> &v) {
+    for (uint64_t i = 0; i < v.size(); ++i) {
+        stream << v[i] << ", ";
+    }
+}
