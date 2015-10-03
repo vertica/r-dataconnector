@@ -27,9 +27,9 @@ namespace ddc {
                     const std::string& objectType,
                     base::ConfigurationMap& conf);
 
-Rcpp::List create_plan(const std::string& url,
-                       base::ConfigurationMap& options,
-                       const ddc::scheduler::WorkerMap& workerMap);
+    Rcpp::List create_plan(const std::string& url,
+                           base::ConfigurationMap& options,
+                           const ddc::scheduler::WorkerMap& workerMap);
 
 } // namespace ddc
 
