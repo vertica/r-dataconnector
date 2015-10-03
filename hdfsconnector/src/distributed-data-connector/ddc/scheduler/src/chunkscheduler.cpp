@@ -159,6 +159,32 @@ Plan ChunkScheduler::schedule() {
 
     planCreated_ = true;
 
+    /**
+     * Logging
+     */
+#if 0
+    // log chunk -> worker
+    for (uint64_t i = 0; i < chunks.size(); ++i) {
+        uint64_t worker = chunkWorkerMap[chunks[i].id];
+        std::string workerName = workerMap_[worker]->hostname();
+        LOG(INFO) << chunks[i] <<
+                     " -> " << workerName;
+    }
+#endif
+    // log worker -> chunk
+    typedef WorkerChunksMap::iterator it_type;
+    for(it_type iterator = workerChunksMap_.begin(); iterator != workerChunksMap_.end(); iterator++) {
+        // iterator->first = key
+        int32_t worker = iterator->first;
+        std::string workerName = workerMap_[worker]->hostname();
+        std::vector<Chunk> chunks = iterator->second;
+        std::ostringstream os;
+        for (uint64_t i = 0; i < chunks.size(); ++i) {
+            os << "\t" << chunks.at(i) << std::endl;
+        }
+        LOG(INFO) << workerName << ": " << std::endl << os.str();
+    }
+
     return plan;
 }
 
@@ -320,10 +346,12 @@ void ChunkScheduler::divide(const uint64_t numExecutors,
     }
 }
 
-std::ostream &operator<<(std::ostream &stream, const Chunk& chunk) {
-    stream << "id: " << chunk.id <<
-              " start: " << chunk.start <<
-              " end: " << chunk.end;
+std::ostream &operator<<(std::ostream &stream, const Chunk& c) {
+    stream << " id: " << c.id <<
+              " protocol: " << c.protocol <<
+              " filename: " << c.filename <<
+              " start: " << c.start <<
+              " end: " << c.end;
     return stream;
 }
 
@@ -352,3 +380,4 @@ std::ostream &operator<<(std::ostream &stream, const ChunkWorkerMap &map) {
 
 }  // namespace scheduler
 }  // namespace ddc
+

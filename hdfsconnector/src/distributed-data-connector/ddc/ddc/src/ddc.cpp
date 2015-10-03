@@ -140,9 +140,6 @@ boost::any ddc_read(const std::string &url,
     std::string protocol = base::utils::getProtocol(url);
     std::string filename = base::utils::stripProtocol(url);
 
-    DLOG(INFO) << "url: " << url << " protocol: " << protocol <<
-                  " filename: " << filename << " ext: " << extension << " objtype: " << objectType;
-
     assembler::IAssemblerPtr assembler = assembler::AssemblerFactory::makeAssembler(objectType);
     recordparser::IRecordParserPtr recordParser = recordparser::RecordParserFactory::makeRecordParser(extension);
     splitproducer::ISplitProducerPtr splitProducer;
@@ -177,7 +174,7 @@ boost::any ddc_read(const std::string &url,
 #endif
         if (extension == "csv") {
             // chunkStart default is 0
-            LOG(INFO) << "chunkStart unspecified. Defaulting to 0.";
+            DLOG(INFO) << "chunkStart unspecified. Defaulting to 0.";
         }
     }
 
@@ -185,7 +182,7 @@ boost::any ddc_read(const std::string &url,
     try {
         chunkEnd = boost::any_cast<uint64_t>(conf["chunkEnd"]);
         if (chunkEnd == -1) {
-            LOG(INFO) << "chunkEnd unspecified. Defaulting to file size.";
+            DLOG(INFO) << "chunkEnd unspecified. Defaulting to file size.";
             chunkEnd = status.length;
         }
     }
@@ -197,7 +194,7 @@ boost::any ddc_read(const std::string &url,
 #endif
         if (extension == "csv") {
             // chunkEnd default in fileSize
-            LOG(INFO) << "chunkEnd unspecified. Defaulting to file size.";
+            DLOG(INFO) << "chunkEnd unspecified. Defaulting to file size.";
             chunkEnd = status.length;
         }
     }
@@ -314,6 +311,27 @@ boost::any ddc_read(const std::string &url,
     }
     else if (extension == "orc") {
 //        DLOG(INFO) << "Selected stripes: " << selectedStripes;
+    }
+
+    /**
+      * Logging
+      */
+
+    LOG(INFO) << "url: " << url << " protocol: " << protocol <<
+                  " filename: " << filename << " ext: " << extension << " objtype: " << objectType;
+
+
+    //" schema: " << schema <<
+
+    if (extension == "csv") {
+        LOG(INFO) << "chunkStart: " << chunkStart <<
+                     " delimiter: " << delimiter <<
+                     " chunkEnd: " << chunkEnd <<
+                     " commentCharacter: " << commentCharacter <<
+                     " skipHeader: " << skipHeader;
+    }
+    else if (extension == "orc") {
+        LOG(INFO) << " selectedStripes: " << selectedStripes;
     }
 
     return assembler->getObject();
@@ -443,6 +461,7 @@ Rcpp::List create_plan(const std::string& url,
         chunkWorkerMapList[base::utils::to_string(i)] = chunkWorkerMap[i];
     }
     res["chunk_worker_map"] = chunkWorkerMapList;
+
     return res;
 }
 

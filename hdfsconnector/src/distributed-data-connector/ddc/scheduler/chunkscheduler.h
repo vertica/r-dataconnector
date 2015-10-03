@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <sstream>
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
@@ -24,6 +25,8 @@ namespace scheduler {
 std::ostream& operator<< (std::ostream& stream, const WorkerChunksMap& map);
 
 std::ostream& operator<< (std::ostream& stream, const ChunkWorkerMap& map);
+
+std::ostream& operator<< (std::ostream& stream, const Chunk& c);
 
 struct Plan {
     Plan()
@@ -86,5 +89,7 @@ private:
 
 }  // namespace scheduler
 }  // namespace ddc
+
+
 
 #endif // DDC_SCHEDULER_CHUNKSCHEDULER_H_
