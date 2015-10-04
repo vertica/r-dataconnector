@@ -143,6 +143,7 @@ SET(test_sources
         blockreader/test/block_test.cpp
         blockreader/test/blockreader_test.cpp
         blockreader/test/hdfsblockreader_test.cpp
+        blockreader/test/prefetchblockreader_test.cpp
         hdfsutils/test/hdfsblocklocator_test.cpp
         hdfsutils/test/basicurldownloader_test.cpp
         hdfsutils/test/hdfsfile_test.cpp
@@ -153,7 +154,7 @@ SET(test_sources
 SET(ddcmaster_test_sources scheduler/test/chunkscheduler_test.cpp ddc/test/driver.cpp ddc/src/globals.cpp)
 
 ADD_EXECUTABLE(ddc_test ${test_sources})
-TARGET_LINK_LIBRARIES(ddc_test ${ddc_dep_libs} ddcmaster_s)
+TARGET_LINK_LIBRARIES(ddc_test ${ddc_dep_libs} ddcmaster_s boost_thread pthread boost_system)
 
 ADD_EXECUTABLE(ddcmaster_test ${ddcmaster_test_sources})
 TARGET_LINK_LIBRARIES(ddcmaster_test ddcmaster_s ${ddc_dep_libs})
