@@ -20,7 +20,6 @@ void LocalBlockReader::configure(base::ConfigurationMap &conf)
 {
     GET_PARAMETER(blockSize_, uint64_t, "blocksize");
     GET_PARAMETER(filename_, std::string, "filename");
-    GET_PARAMETER(filename_, std::string, "filename");
     f_ = base::ScopedFilePtr(new base::ScopedFile(filename_));
     configured_ = true;
 }
