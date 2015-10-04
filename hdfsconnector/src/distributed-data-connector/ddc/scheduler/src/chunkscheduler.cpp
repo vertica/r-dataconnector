@@ -313,8 +313,18 @@ void ChunkScheduler::divide(const uint64_t numExecutors,
     // reorder by chunkStart
     typedef std::map<Chunk, bool, KeyCompare2> Map2;
     Map2 map2;
+    int i = 0;
     for(Map::iterator it = map.begin(); it != map.end(); ++it) {
-        map2[(it->first).chunk] = true;
+        const Chunk& c = (it->first).chunk;
+        Chunk c2;
+        // fix chunk id
+        c2.id = i;
+        ++i;
+        c2.start = c.start;
+        c2.end = c.end;
+        c2.filename = c.filename;
+        c2.protocol = c.protocol;
+        map2[c2] = true;
     }
 
 
