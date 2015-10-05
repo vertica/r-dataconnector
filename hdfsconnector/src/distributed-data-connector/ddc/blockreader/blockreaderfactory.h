@@ -1,6 +1,7 @@
 #ifndef DDC_BLOCKREADER_BLOCKREADERFACTORY_H
 #define DDC_BLOCKREADER_BLOCKREADERFACTORY_H
 
+#include <stdlib.h>
 
 #include <stdexcept>
 #include <string>
@@ -13,6 +14,7 @@
 #include "fakeblockreader.h"
 #include "localblockreader.h"
 #include "hdfsblockreader.h"
+#include "prefetchblockreader.h"
 
 
 namespace ddc{

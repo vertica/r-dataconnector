@@ -131,7 +131,11 @@ ADD_LIBRARY(hdfsutils_s STATIC ${hdfsutils_sources})
 #ADD_LIBRARY(base SHARED ${base_sources})
 ADD_LIBRARY(base_s STATIC ${base_sources})
 
-SET(ddc_dep_libs ddc_s hdfsutils_s webhdfs_s base_s orc_s gtest gmock R RInside glog gflags yajl curl ssl crypto z protobuf snappy unwind unwind-x86_64 lzma pthread dl)
+SET(ddc_dep_libs ddc_s hdfsutils_s webhdfs_s base_s orc_s
+    gtest gmock R RInside glog gflags yajl curl ssl crypto z
+    protobuf snappy unwind unwind-x86_64 lzma
+    boost_thread pthread boost_system dl)
+# tcmalloc
 
 # tests
 SET(test_sources
@@ -151,10 +155,12 @@ SET(test_sources
         ddc/test/ddc_test.cpp
         ddc/test/driver.cpp)
 
-SET(ddcmaster_test_sources scheduler/test/chunkscheduler_test.cpp ddc/test/driver.cpp ddc/src/globals.cpp)
+SET(ddcmaster_test_sources
+        scheduler/test/chunkscheduler_test.cpp
+        ddc/test/driver.cpp ddc/src/globals.cpp)
 
 ADD_EXECUTABLE(ddc_test ${test_sources})
-TARGET_LINK_LIBRARIES(ddc_test ${ddc_dep_libs} ddcmaster_s boost_thread pthread boost_system)
+TARGET_LINK_LIBRARIES(ddc_test ${ddc_dep_libs} ddcmaster_s)
 
 ADD_EXECUTABLE(ddcmaster_test ${ddcmaster_test_sources})
 TARGET_LINK_LIBRARIES(ddcmaster_test ddcmaster_s ${ddc_dep_libs})
@@ -174,7 +180,8 @@ TARGET_LINK_LIBRARIES(ddcmaster_test ddcmaster_s ${ddc_dep_libs})
 #ADD_LIBRARY(distributor SHARED ${distributor_sources} ${base_sources})
 ADD_LIBRARY(distributor_s STATIC ${distributor_sources} ${base_sources})
 
-SET(distributor_dep_libs distributor_s zmq protobuf boost_thread pthread boost_system glog gflags gtest unwind unwind-x86_64 lzma)
+SET(distributor_dep_libs distributor_s zmq protobuf boost_thread pthread boost_system
+    glog gflags gtest unwind unwind-x86_64 lzma)
 
 ADD_EXECUTABLE(requestreceiver_test distributor/test/requestreceiver_test.cpp)
 TARGET_LINK_LIBRARIES(requestreceiver_test ${distributor_dep_libs})

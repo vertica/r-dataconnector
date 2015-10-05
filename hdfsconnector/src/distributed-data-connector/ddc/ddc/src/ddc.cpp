@@ -157,7 +157,15 @@ boost::any ddc_read(const std::string &url,
     base::FileStatus status = file->stat();
 
     base::ConfigurationMap blockReaderConf;
-    blockReaderConf["filename"] = filename;
+
+    char* enablePrefetching = getenv("DDC_ENABLE_PREFETCHING");
+    if (enablePrefetching != NULL) {
+        blockReaderConf["filename"] = url;  // when using prefetchblockreader
+    }
+    else {
+        blockReaderConf["filename"] = filename;  // when not using prefetchblockreader
+    }
+
     blockReaderConf["blocksize"] = static_cast<uint64_t>(32 * 1024 * 1024); //TODO camelcase, only makes sense for local
     blockReaderConf["hdfsConfigurationFile"] = conf["hdfsConfigurationFile"];
     blockReader->configure(blockReaderConf);
