@@ -5,7 +5,7 @@ PROTOBUF_VERSION=2.6.1
 INSTALLDIR=$(abspath install)
 NCORES=$(shell getconf _NPROCESSORS_ONLN)
 
-all: boost yajl curl openssl gtest gmock glog gflags z unwind lzma zmq protobuf snappy
+all: boost yajl curl openssl gtest gmock glog gflags z unwind lzma zmq protobuf snappy tcmalloc
 
 boost: $(INSTALLDIR)/lib/libboost_chrono.a $(INSTALLDIR)/lib/libboost_date_time.a $(INSTALLDIR)/lib/libboost_filesystem.a  $(INSTALLDIR)/lib/libboost_system.a $(INSTALLDIR)/lib/libboost_thread.a
 
@@ -98,6 +98,10 @@ $(INSTALLDIR)/bin/cmake:
 	tar -zxf cmake-3.2.3.tar.gz
 	cd cmake-3.2.3; ./configure  --prefix=$(INSTALLDIR) && make -j$(NCORES)  && make -j$(NCORES) install
 
+tcmalloc:$(INSTALLDIR)/lib/libtcmalloc.a
+$(INSTALLDIR)/lib/libtcmalloc.a: $(INSTALLDIR)/lib/libunwind.a
+	tar -zxf gperftools-2.4.tar.gz
+	cd gperftools-2.4; CFLAGS=-fPIC CXXFLAGS=-fPIC LDFLAGS=-fPIC ./configure --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make -j$(NCORES)  && make -j$(NCORES) install
 
 clean: 
 	rm -rf $(INSTALLDIR)
@@ -120,5 +124,6 @@ clean:
 	rm -rf zeromq-4.1.2
 	rm -rf libuuid-1.0.3
 	rm -rf gmock-1.7.0
+	rm -rf gperftools-2.4
 
 
