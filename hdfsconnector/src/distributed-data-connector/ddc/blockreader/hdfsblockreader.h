@@ -55,6 +55,8 @@ private:
     std::string filename_;
     std::string hdfsConfigurationFile_;
     bool configured_;
+
+    uint64_t fileSize_;
 };
 
 } // namespace blockreader

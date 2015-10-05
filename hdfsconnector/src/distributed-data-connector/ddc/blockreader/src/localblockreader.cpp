@@ -6,7 +6,11 @@
 namespace ddc{
 namespace blockreader {
 
-LocalBlockReader::LocalBlockReader() : blockSize_(0), filename_(""), configured_(false)
+LocalBlockReader::LocalBlockReader() :
+    blockSize_(0),
+    filename_(""),
+    configured_(false),
+    fileSize_(0)
 {
 
 }
@@ -21,6 +25,7 @@ void LocalBlockReader::configure(base::ConfigurationMap &conf)
     GET_PARAMETER(blockSize_, uint64_t, "blocksize");
     GET_PARAMETER(filename_, std::string, "filename");
     f_ = base::ScopedFilePtr(new base::ScopedFile(filename_));
+    fileSize_ = f_->stat().length;
     configured_ = true;
 }
 
@@ -52,6 +57,13 @@ BlockPtr LocalBlockReader::getBlock(const uint64_t blockStart, const uint64_t nu
 
     if(numBytes == 0) {
         throw std::runtime_error("requested 0 numBytes");
+    }
+
+    if (blockStart >= fileSize_) {
+        // return empty buffer
+        boost::shared_ptr<std::vector<uint8_t> > v = boost::shared_ptr<std::vector<uint8_t> >(new std::vector<u_int8_t>);
+        BlockPtr block = BlockPtr(new Block(v));
+        return block;
     }
 
     //DLOG(INFO) << "blockStart: " << blockStart << " numBytes: " << numBytes;

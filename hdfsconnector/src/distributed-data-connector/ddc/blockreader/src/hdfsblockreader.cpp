@@ -5,7 +5,8 @@ namespace blockreader {
 
 HdfsBlockReader::HdfsBlockReader() :
     blockSize_(0),
-    configured_(false)
+    configured_(false),
+    fileSize_(0)
 {
 }
 
@@ -25,7 +26,7 @@ void HdfsBlockReader::configure(base::ConfigurationMap &conf)
     file.configure(blockLocatorConf);
     base::FileStatus s = file.stat();
     blockSize_ = s.blockSize;
-
+    fileSize_ = s.length;
     configured_ = true;
 }
 
@@ -45,6 +46,17 @@ BlockPtr HdfsBlockReader::getBlock(const uint64_t blockStart, const uint64_t num
 {
     if(!configured_) {
         throw std::runtime_error("need to configure");
+    }
+
+    if(numBytes == 0) {
+        throw std::runtime_error("requested 0 numBytes");
+    }
+
+    if (blockStart >= fileSize_) {
+        // return empty buffer
+        boost::shared_ptr<std::vector<uint8_t> > v = boost::shared_ptr<std::vector<uint8_t> >(new std::vector<u_int8_t>);
+        BlockPtr block = BlockPtr(new Block(v));
+        return block;
     }
 
     hdfsutils::HdfsBlockLocator locator;

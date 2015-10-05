@@ -32,6 +32,8 @@ private:
     std::string filename_;
     base::ScopedFilePtr f_;
     bool configured_;
+
+    uint64_t fileSize_;
 };
 
 } // namespace blockreader
