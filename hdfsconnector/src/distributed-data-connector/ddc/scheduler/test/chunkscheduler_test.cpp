@@ -269,8 +269,8 @@ TEST_F(ChunkSchedulerTest, Divide2Files) {
     divideWrapper(2, files, "", chunks, configurations);
 
     std::vector<Chunk> refChunks;
-    refChunks.push_back(Chunk(0, "", "../ddc/test/data/ex001.csv", 0, 18));
-    refChunks.push_back(Chunk(1, "", "../ddc/test/data/ex002.csv", 0, 36));
+    refChunks.push_back(Chunk(1, "", "../ddc/test/data/ex001.csv", 0, 18));
+    refChunks.push_back(Chunk(0, "", "../ddc/test/data/ex002.csv", 0, 36));
     EXPECT_EQ(chunks, refChunks);
 }
 
@@ -284,11 +284,12 @@ TEST_F(ChunkSchedulerTest, DivideBigAndSmall) {
     divideWrapper(4, files, "", chunks, configurations);
 
     std::vector<Chunk> refChunks;
-    // TODO id's are wrong
-    refChunks.push_back(Chunk(1, "", "../ddc/test/data/ex001.csv", 0, 18));
-    refChunks.push_back(Chunk(2, "", "../ddc/test/data/test512MB.csv", 0, 134217728));
-    refChunks.push_back(Chunk(3, "", "../ddc/test/data/test512MB.csv", 134217728, 268435456));
-    refChunks.push_back(Chunk(2, "", "../ddc/test/data/test512MB.csv", 268435456, 536870912));
+
+    refChunks.push_back(Chunk(3, "", "../ddc/test/data/ex001.csv", 0, 18));
+    refChunks.push_back(Chunk(1, "", "../ddc/test/data/test512MB.csv", 0, 134217728));
+    refChunks.push_back(Chunk(2, "", "../ddc/test/data/test512MB.csv", 134217728, 268435456));
+    refChunks.push_back(Chunk(0, "", "../ddc/test/data/test512MB.csv", 268435456, 536870912));
+
 
 
     EXPECT_EQ(chunks, refChunks);
