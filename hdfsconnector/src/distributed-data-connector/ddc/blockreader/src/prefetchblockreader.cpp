@@ -108,15 +108,17 @@ uint64_t PrefetchBlockReader::requestBlocks(const uint64_t blockStart, const uin
 //            uint64_t diff = fileSize_ - offset;
 //            actualNumBytes = std::min(diff, numBytes);
 //        }
-        if (splitEnd_ == 0) {
+        if (offset >= fileSize_ && fileSize_ != 0) {
+            return requestedBlocks;
+        }
+
+        if (fileSize_ == 0) {
             actualNumBytes = numBytes;
         }
         else {
-            uint64_t diff = splitEnd_ - offset;
+            uint64_t diff = fileSize_ - offset;
             actualNumBytes = std::min(diff, numBytes);
         }
-
-        if (actualNumBytes == 0) return requestedBlocks;
 
         if (requestedBlocks_.find(Range(offset, actualNumBytes)) != requestedBlocks_.end()) {
             // if we already have a request in flight for this block return
@@ -131,7 +133,10 @@ uint64_t PrefetchBlockReader::requestBlocks(const uint64_t blockStart, const uin
             request->data.offset = offset;
             request->data.numBytes = actualNumBytes;
             DLOG(INFO) << "Requesting block. Offset: " << offset <<
-                          " numbytes: " << actualNumBytes;
+                          " numbytes: " << actualNumBytes <<
+                          " original was start: " << blockStart <<
+                          " numbytes: " << numBytes <<
+                          " fileSize_: " << fileSize_;
             requestedBlocks_[Range(offset,actualNumBytes)] = true;
 
             requestQueue_->slotWritten(request);
@@ -142,10 +147,27 @@ uint64_t PrefetchBlockReader::requestBlocks(const uint64_t blockStart, const uin
     return requestedBlocks;
 }
 
+static BlockPtr loadFakeData(const uint64_t numBytes) {
+
+
+    if (numBytes > 512 * 1024 *1024) {
+        throw std::runtime_error("not enough bytes");
+    }
+    std::ifstream t("/home/jorgem/projects/r-hdfsconnector/hdfsconnector/src/distributed-data-connector/ddc/ddc/test/data/test512MB.csv");
+    boost::shared_ptr<std::string> s =
+            boost::shared_ptr<std::string>(new std::string((std::istreambuf_iterator<char>(t)),
+                                                           std::istreambuf_iterator<char>()));
+
+    return BlockPtr(new Block(s));
+}
+
 BlockPtr PrefetchBlockReader::getBlock(const uint64_t blockStart, const uint64_t numBytes) {
+    DLOG(INFO) << "getBlock called with blockstart: " << blockStart <<
+                  " numbytes: " << numBytes;
     base::Block<Range> *block;
     BlockPtr res;
 
+    char* loadFakeDataStr = getenv("DDC_LOAD_FAKE_DATA");
     /**
       * Check if the block is present already
       */
@@ -153,6 +175,9 @@ BlockPtr PrefetchBlockReader::getBlock(const uint64_t blockStart, const uint64_t
         if (block->data.offset == blockStart && block->data.numBytes == numBytes) {
             res = block->data.data;
 
+            if (loadFakeDataStr != NULL) {
+                res = loadFakeData(block->data.numBytes);
+            }
 
             // delete from inflight list
             requestedBlocks_.erase(Range(block->data.offset, block->data.numBytes));
@@ -193,14 +218,18 @@ BlockPtr PrefetchBlockReader::getBlock(const uint64_t blockStart, const uint64_t
             if (block->data.offset == blockStart && block->data.numBytes == numBytes) {
                 res = block->data.data;
 
+                if (loadFakeDataStr != NULL) {
+                    res = loadFakeData(block->data.numBytes);
+                }
+
                 // delete from inflight list
                 requestedBlocks_.erase(Range(block->data.offset, block->data.numBytes));
 
                 responseQueue_->slotRead(block);
 
 
-                // prefetch next blocks
-                requestBlocks(blockStart + numBytes, numBytes);
+//                // prefetch next blocks
+//                requestBlocks(blockStart + numBytes, numBytes);
                 DLOG(INFO) << "1. After requesting returning block " << block->data.offset <<
                               ", " << block->data.numBytes;
                 return res;
@@ -264,7 +293,7 @@ void PrefetchBlockReader::Worker::run() {
         requestQueue_->getReadSlot(&request);
 
         if (request->shutdownStage) {
-            LOG(INFO) << "shutting down worker";
+            DLOG(INFO) << "shutting down worker";
             requestQueue_->slotRead(request);
             break;
         }
