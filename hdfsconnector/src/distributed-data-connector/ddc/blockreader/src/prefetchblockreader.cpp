@@ -7,7 +7,8 @@ namespace blockreader {
 PrefetchBlockReader::PrefetchBlockReader() :
     blockSize_(0),
     prefetchQueueSize_(2),
-    fileSize_(0)
+    fileSize_(0),
+    splitEnd_(0)
 {
 
 }
@@ -25,6 +26,8 @@ PrefetchBlockReader::~PrefetchBlockReader() {
 void PrefetchBlockReader::configure(base::ConfigurationMap &conf) {
     GET_PARAMETER(blockSize_, uint64_t, "blocksize");
     GET_PARAMETER(filename_, std::string, "filename");
+
+    GET_PARAMETER(splitEnd_, uint64_t, "splitEnd");
 
     try {
         GET_PARAMETER(prefetchQueueSize_, uint64_t, "prefetchQueueSize");
@@ -98,11 +101,18 @@ uint64_t PrefetchBlockReader::requestBlocks(const uint64_t blockStart, const uin
     for (uint64_t i = 0; i < prefetchQueueSize_; ++i) {
 
 
-        if (fileSize_ == 0) {
+//        if (fileSize_ == 0) {
+//            actualNumBytes = numBytes;
+//        }
+//        else {
+//            uint64_t diff = fileSize_ - offset;
+//            actualNumBytes = std::min(diff, numBytes);
+//        }
+        if (splitEnd_ == 0) {
             actualNumBytes = numBytes;
         }
         else {
-            uint64_t diff = fileSize_ - offset;
+            uint64_t diff = splitEnd_ - offset;
             actualNumBytes = std::min(diff, numBytes);
         }
 

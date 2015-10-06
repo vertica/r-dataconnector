@@ -132,6 +132,7 @@ class PrefetchBlockReader : public IBlockReader {
     std::map<Range, bool> requestedBlocks_;
 
     uint64_t fileSize_;
+    uint64_t splitEnd_;
     bool configured_;
 
 };

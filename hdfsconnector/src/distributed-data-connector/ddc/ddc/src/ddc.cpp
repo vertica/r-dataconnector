@@ -156,19 +156,7 @@ boost::any ddc_read(const std::string &url,
     }
     base::FileStatus status = file->stat();
 
-    base::ConfigurationMap blockReaderConf;
 
-    char* enablePrefetching = getenv("DDC_ENABLE_PREFETCHING");
-    if (enablePrefetching != NULL) {
-        blockReaderConf["filename"] = url;  // when using prefetchblockreader
-    }
-    else {
-        blockReaderConf["filename"] = filename;  // when not using prefetchblockreader
-    }
-
-    blockReaderConf["blocksize"] = static_cast<uint64_t>(32 * 1024 * 1024); //TODO camelcase, only makes sense for local
-    blockReaderConf["hdfsConfigurationFile"] = conf["hdfsConfigurationFile"];
-    blockReader->configure(blockReaderConf);
 
     uint64_t chunkStart = 0;
     try {
@@ -259,6 +247,21 @@ boost::any ddc_read(const std::string &url,
     catch(...) {
 
     }
+
+    base::ConfigurationMap blockReaderConf;
+
+    char* enablePrefetching = getenv("DDC_ENABLE_PREFETCHING");
+    if (enablePrefetching != NULL) {
+        blockReaderConf["filename"] = url;  // when using prefetchblockreader
+    }
+    else {
+        blockReaderConf["filename"] = filename;  // when not using prefetchblockreader
+    }
+
+    blockReaderConf["blocksize"] = static_cast<uint64_t>(32 * 1024 * 1024); //TODO camelcase, only makes sense for local
+    blockReaderConf["hdfsConfigurationFile"] = conf["hdfsConfigurationFile"];
+    blockReaderConf["splitEnd"] = static_cast<uint64_t>(chunkEnd);
+    blockReader->configure(blockReaderConf);
 
     base::ConfigurationMap splitProducerConf;
     if(extension == "csv") { //delimiter based splitters

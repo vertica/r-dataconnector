@@ -46,7 +46,7 @@ void DelimiterSplitProducer::configure(base::ConfigurationMap& conf)
             throw std::runtime_error("offset >= fileEnd");
         }
         uint64_t blockStart = (((int64_t)offset_ - (int64_t)blockSize_) > 0) ? (offset_ - blockSize_) : 0;
-        uint64_t end = std::min(blockStart + blockSize_, fileEnd_);
+        uint64_t end = std::min(blockStart + blockSize_, splitEnd_);
         uint64_t numBytes = end - blockStart;
         //TODO fetch block in next(), not here
         block_ = blockReader_->getBlock(blockStart, numBytes); //get previous block
@@ -100,7 +100,7 @@ SplitPtr DelimiterSplitProducer::next()
                 stopDdc = false;
                 throw std::runtime_error("User cancelled operation.");
             }
-            uint64_t end = std::min(offset_ + blockSize_, fileEnd_);
+            uint64_t end = std::min(offset_ + blockSize_, splitEnd_);
             uint64_t numBytes = end - offset_;
             DLOG(INFO) << "requesting block, offset: " << offset_ << " numBytes: " << numBytes;
             LOG(INFO) <<  boost::format(" Completed %3.2f%%\r")  % (100 * (float)offset_/(float)fileEnd_);
