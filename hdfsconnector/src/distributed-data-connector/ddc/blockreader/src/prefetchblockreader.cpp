@@ -59,9 +59,9 @@ void PrefetchBlockReader::configure(base::ConfigurationMap &conf) {
 
     requestQueue_ = boost::shared_ptr<base::ProducerConsumerQueue<base::Block<Range> > >(new base::ProducerConsumerQueue<base::Block<Range> > ());
     responseQueue_ = boost::shared_ptr<base::ProducerConsumerQueue<base::Block<Range> > >(new base::ProducerConsumerQueue<base::Block<Range> > ());
+
     requestQueue_->configure(prefetchQueueSize_);
     responseQueue_->configure(prefetchQueueSize_);
-
 
     worker_ = boost::shared_ptr<Worker>(new Worker(requestQueue_,responseQueue_,conf));
     worker_->start();
@@ -112,7 +112,7 @@ uint64_t PrefetchBlockReader::requestBlocks(const uint64_t blockStart, const uin
             // if we already have a request in flight for this block return
 //            DLOG(INFO) << "Not requesting " << offset << ", " << actualNumBytes <<
 //                          " because it's on the list";
-            continue;
+            return requestedBlocks;
         }
 
         if (requestQueue_->tryGetWriteSlot(&request)) {
@@ -122,9 +122,9 @@ uint64_t PrefetchBlockReader::requestBlocks(const uint64_t blockStart, const uin
             request->data.numBytes = actualNumBytes;
             DLOG(INFO) << "Requesting block. Offset: " << offset <<
                           " numbytes: " << actualNumBytes;
-            requestQueue_->slotWritten(request);
-
             requestedBlocks_[Range(offset,actualNumBytes)] = true;
+
+            requestQueue_->slotWritten(request);
 
             offset += actualNumBytes;
         }
@@ -144,17 +144,13 @@ BlockPtr PrefetchBlockReader::getBlock(const uint64_t blockStart, const uint64_t
             res = block->data.data;
 
 
-            responseQueue_->slotRead(block);
-
             // delete from inflight list
             requestedBlocks_.erase(Range(block->data.offset, block->data.numBytes));
 
+            responseQueue_->slotRead(block);
 
-            // prefetch next blocks
-            uint64_t requestedBlocks = requestBlocks(blockStart + numBytes, numBytes);
             DLOG(INFO) << "1. From cache returning block " << block->data.offset <<
                           ", " << block->data.numBytes;
-
 
             return res;
         }
@@ -167,10 +163,12 @@ BlockPtr PrefetchBlockReader::getBlock(const uint64_t blockStart, const uint64_t
                           ", " << block->data.numBytes;
                           ;
 
-            responseQueue_->slotRead(block); // discard this block
-
             // delete from inflight list
             requestedBlocks_.erase(Range(block->data.offset, block->data.numBytes));
+
+            responseQueue_->slotRead(block); // discard this block
+
+
 
         }
     }
@@ -185,16 +183,16 @@ BlockPtr PrefetchBlockReader::getBlock(const uint64_t blockStart, const uint64_t
             if (block->data.offset == blockStart && block->data.numBytes == numBytes) {
                 res = block->data.data;
 
-                responseQueue_->slotRead(block);
-
                 // delete from inflight list
                 requestedBlocks_.erase(Range(block->data.offset, block->data.numBytes));
+
+                responseQueue_->slotRead(block);
+
 
                 // prefetch next blocks
                 requestBlocks(blockStart + numBytes, numBytes);
                 DLOG(INFO) << "1. After requesting returning block " << block->data.offset <<
                               ", " << block->data.numBytes;
-
                 return res;
             }
             else {
@@ -204,11 +202,12 @@ BlockPtr PrefetchBlockReader::getBlock(const uint64_t blockStart, const uint64_t
                 DLOG(INFO) << "2. Wrong block ,discarding ... Expected: " << blockStart <<
                               ", " << numBytes << " but got " << block->data.offset <<
                               ", " << block->data.numBytes;
-                              ;
-                responseQueue_->slotRead(block); // discard this block
 
                 // delete from inflight list
                 requestedBlocks_.erase(Range(block->data.offset, block->data.numBytes));
+
+                responseQueue_->slotRead(block); // discard this block
+
             }
         }
     }
