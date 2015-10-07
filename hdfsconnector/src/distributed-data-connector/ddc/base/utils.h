@@ -54,6 +54,9 @@ namespace utils {
     std::string hostnameToIpAddress(const std::string& hostname);
 
 
+    void buffer2file(uint8_t *buffer,
+                     const uint64_t size,
+                     const std::string filename);
 
 }  // namespace utils
 }  // namespace base

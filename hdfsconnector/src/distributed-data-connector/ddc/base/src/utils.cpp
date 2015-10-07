@@ -225,6 +225,22 @@ std::string hostnameToIpAddress(const std::string &hostname)
     throw std::runtime_error(os.str());
 }
 
+void buffer2file(uint8_t *buffer, const uint64_t size, const std::string filename) {
+    std::ofstream outfile (filename,std::ofstream::binary);
+    if (!outfile) {
+        std::ostringstream os;
+        os << "Error opening file " << filename << " for write.";
+        throw std::runtime_error(os.str());
+    }
+    outfile.write ((const char *)buffer,size);
+    if (outfile.bad()) {
+        std::ostringstream os;
+        os << "Error writing file " << filename;
+        throw std::runtime_error(os.str());
+    }
+
+}
+
 
 } //namespace utils
 } //namespace base
