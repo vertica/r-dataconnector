@@ -23,6 +23,11 @@ class PrefetchBlockReaderTest : public ::testing::Test {
   }
 };
 
+/**
+ * Disable tests for now
+ */
+
+#if 0
 
 TEST_F(PrefetchBlockReaderTest, RealFile) {
     base::ConfigurationMap conf;
@@ -203,7 +208,7 @@ TEST_F(PrefetchBlockReaderTest, NonPowerOfTwo) {
         }
     }
 }
-
+#endif
 } // namespace testing
 } // namespace blockreader
 } // namespace ddc
