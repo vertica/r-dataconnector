@@ -36,6 +36,10 @@ void FakeSplitProducer::setSplits(const std::vector<std::string> &splits)
     splits_ = splits;
 }
 
+base::ConfigurationMap FakeSplitProducer::getDebugInfo() {
+
+}
+
 boost::shared_ptr<Split> FakeSplitProducer::next()
 {
 

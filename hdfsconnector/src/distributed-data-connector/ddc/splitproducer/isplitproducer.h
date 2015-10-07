@@ -45,6 +45,8 @@ public:
      */
     virtual boost::shared_ptr<Split> next() = 0;
 
+    virtual base::ConfigurationMap getDebugInfo() = 0;
+
 };
 
 typedef boost::shared_ptr<ISplitProducer> ISplitProducerPtr;

@@ -27,6 +27,10 @@ void FakeRecordParser::setRecords(const std::vector<boost::any> &records)
     records_ = records;
 }
 
+base::ConfigurationMap FakeRecordParser::getDebugInfo() {
+    return base::ConfigurationMap();
+}
+
 
 bool FakeRecordParser::hasNext() {
     return index_ < 9;

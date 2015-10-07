@@ -23,6 +23,7 @@ public:
 
     void setRecords(const std::vector<boost::any>& records);
 
+    base::ConfigurationMap getDebugInfo();
 
 private:
     int32_t index_;

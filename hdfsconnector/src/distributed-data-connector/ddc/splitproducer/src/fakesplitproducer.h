@@ -22,6 +22,8 @@ public:
 
     void setSplits(const std::vector<std::string>& splits);
 
+    base::ConfigurationMap getDebugInfo();
+
 private:
     std::vector<std::string> splits_;
     int32_t index_;

@@ -43,7 +43,13 @@ public:
     boost::any next();
     bool hasNext();
 
+    base::ConfigurationMap getDebugInfo();
+
+
+
 private:
+    void dumpDebugInfo();
+
     splitproducer::Split currentSplit_;
 //    std::string line_;
 //    std::istringstream ss_;
@@ -58,6 +64,11 @@ private:
     char commentCharacter_;
     uint64_t commentLinesDiscarded_;
     uint64_t blankLinesDiscarded_;
+
+    uint64_t chunkStart_;
+    uint64_t chunkEnd_;
+
+    std::string url_;
 };
 
 } // namespace recordparsing

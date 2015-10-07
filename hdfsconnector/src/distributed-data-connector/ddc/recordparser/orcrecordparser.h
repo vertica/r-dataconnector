@@ -59,6 +59,8 @@ class OrcRecordParser : public IRecordParser {
         return numRows_;
     }
 
+    base::ConfigurationMap getDebugInfo();
+
  private:
 
     void getRecord(orc::ColumnVectorBatch* column,

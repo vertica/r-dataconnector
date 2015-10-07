@@ -287,6 +287,9 @@ boost::any ddc_read(const std::string &url,
     recordParserConf["splitProducer"] = splitProducer;
     recordParserConf["delimiter"] = delimiter;
     recordParserConf["commentCharacter"] = commentCharacter;
+    recordParserConf["chunkStart"] = static_cast<uint64_t>(chunkStart);
+    recordParserConf["chunkEnd"] = static_cast<uint64_t>(chunkEnd);
+    recordParserConf["url"] = url;
     //TODO read schema file from storage
     if((extension == "csv" || extension == "offsetcsv") && schemaUrl == "") {
         throw std::runtime_error("need to specify schema to load csv file");
@@ -314,6 +317,8 @@ boost::any ddc_read(const std::string &url,
     assemblerConf["schema"] = schema;
     assemblerConf["url"] = url;
     assemblerConf["hdfsConfigurationFile"] = conf["hdfsConfigurationFile"];
+    assemblerConf["chunkStart"] = static_cast<uint64_t>(chunkStart);
+    assemblerConf["chunkEnd"] = static_cast<uint64_t>(chunkEnd);
     assembler->configure(assemblerConf);
 
     if (extension == "csv") {

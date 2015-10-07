@@ -38,6 +38,8 @@ public:
         observer_ = observer;
     }
 
+    virtual base::ConfigurationMap getDebugInfo() = 0;
+
 protected:
     base::IObserver<int32_t> *observer_;
 };

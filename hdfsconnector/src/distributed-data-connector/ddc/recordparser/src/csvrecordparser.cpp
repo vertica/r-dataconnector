@@ -2,6 +2,8 @@
 #include <stdlib.h> //for atoi()
 #include <iostream>
 #include <glog/logging.h>
+#include "base/utils.h"
+#include "blockreader/block.h"
 
 namespace ddc {
 namespace recordparser {
@@ -13,7 +15,9 @@ CsvRecordParser::CsvRecordParser()
       delimiter_(','),
       commentCharacter_('#'),
       commentLinesDiscarded_(0),
-      blankLinesDiscarded_(0)
+      blankLinesDiscarded_(0),
+      chunkStart_(0),
+      chunkEnd_(0)
 {    
     observer_ = NULL;
 }
@@ -30,6 +34,11 @@ void CsvRecordParser::configure(base::ConfigurationMap &conf)
     #undef DDC_COMMA
     GET_PARAMETER(delimiter_, char, "delimiter");
     GET_PARAMETER(commentCharacter_, char, "commentCharacter");
+
+    GET_PARAMETER(chunkStart_, uint64_t, "chunkStart");
+    GET_PARAMETER(chunkEnd_, uint64_t, "chunkEnd");
+    GET_PARAMETER(url_, std::string, "url");
+
     configured_ = true;
 }
 
@@ -44,6 +53,32 @@ static bool isCommentLine(const std::string& line,
     return (line[index] == commentCharacter);
 }
 
+void CsvRecordParser::dumpDebugInfo() {
+    base::ConfigurationMap conf = splitProducer_->getDebugInfo();
+
+    std::ostringstream os;
+    for (uint64_t i = 0; i < row_.size(); ++i) {
+        os << row_[i] << ", ";
+    }
+    os << std::endl;
+    LOG(ERROR) << "Csv row: " << os.str();
+
+    blockreader::BlockPtr block;
+    GET_PARAMETER(block, blockreader::BlockPtr, "block");
+
+    std::string filename = std::string("/tmp/") + std::string(basename((char *)url_.c_str())) + "_" +
+            base::utils::to_string(chunkStart_) + "_" +
+            base::utils::to_string(chunkEnd_) + "_" +
+            "_block.bin";
+    LOG(ERROR) << "Dumping block to file " << filename;
+    base::utils::buffer2file(block->buffer, block->used, filename);
+
+    std::string split;
+    GET_PARAMETER(split, std::string, "split");
+
+    LOG(ERROR) << "Split: " << split;
+}
+
 boost::any CsvRecordParser::next(){
     if(!configured_) {
         throw std::runtime_error("not configured");
@@ -51,6 +86,7 @@ boost::any CsvRecordParser::next(){
     //if we already have a line, consume that
     if((uint64_t)rowIndex_ < row_.size()) {
         if (schema_.find(rowIndex_) == schema_.end() ) {
+            dumpDebugInfo();
             std::ostringstream os;
             os << "Invalid schema. Unable to find type for column " << rowIndex_ << ".";
             throw std::runtime_error(os.str());
@@ -149,6 +185,15 @@ bool CsvRecordParser::hasNext()
     }
     return ((uint64_t)rowIndex_ < row_.size()) || (splitProducer_->hasNext());
 
+}
+
+base::ConfigurationMap CsvRecordParser::getDebugInfo() {
+    base::ConfigurationMap conf;
+    conf["csvRow"] = row_;
+    base::ConfigurationMap spConf = splitProducer_->getDebugInfo();
+    conf["block"] = spConf["block"];
+    conf["split"] = spConf["split"];
+    return conf;
 }
 
 

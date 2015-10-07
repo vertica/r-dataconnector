@@ -19,11 +19,14 @@ public:
 
     void configure(base::ConfigurationMap &conf);
 
+    base::ConfigurationMap getDebugInfo();
+
 private:
     blockreader::IBlockReaderPtr blockReader_;
     blockreader::BlockPtr block_;
 
     std::string split_;
+    std::string splitCopy_;
 
     uint64_t blockSize_;
     uint64_t fileEnd_;

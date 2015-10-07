@@ -14,7 +14,9 @@ RDataFrameAssembler::RDataFrameAssembler() :
     numColsInLastRow_(-1),
     configured_(false),
     needUnprotect_(false),
-    numProtects_(0)
+    numProtects_(0),
+    chunkStart_(0),
+    chunkEnd_(0)
 {
 }
 
@@ -59,6 +61,12 @@ void RDataFrameAssembler::configure(base::ConfigurationMap &conf)
     if(format_ != "row" && format_ != "column") {
         throw std::runtime_error("format needs to be row or column");
     }
+
+    if (extension_ == "csv") {
+        GET_PARAMETER(chunkStart_, uint64_t, "chunkStart");
+        GET_PARAMETER(chunkEnd_, uint64_t, "chunkEnd");
+    }
+
     configured_ = true;
 }
 
@@ -390,6 +398,9 @@ SEXP RDataFrameAssembler::ParseValue(recordparser::NodePtr& node, int level) {
         }
     }
 }
+
+
+
 std::vector<std::string> RDataFrameAssembler::columnNames() const
 {
     return columnNames_;
@@ -1058,11 +1069,41 @@ boost::any RDataFrameAssembler::getObject()
     }
 }
 
+void RDataFrameAssembler::dumpDebugInfo() {
+    base::ConfigurationMap conf = recordParser_->getDebugInfo();
+
+    text::csv::row row;
+    GET_PARAMETER(row, text::csv::row, "csvRow");
+    std::ostringstream os;
+    for (uint64_t i = 0; i < row.size(); ++i) {
+        os << row[i] << ", ";
+    }
+    os << std::endl;
+    LOG(ERROR) << "Csv row: " << os.str();
+
+    ddc::blockreader::BlockPtr block;
+    GET_PARAMETER(block, ddc::blockreader::BlockPtr, "block");
+
+    std::string filename = std::string("/tmp/") + std::string(basename((char *)url_.c_str())) + "_" +
+            base::utils::to_string(chunkStart_) + "_" +
+            base::utils::to_string(chunkEnd_) + "_" +
+            "_block.bin";
+    LOG(ERROR) << "Dumping block to file " << filename;
+    base::utils::buffer2file(block->buffer, block->used, filename);
+
+    std::string split;
+    GET_PARAMETER(split, std::string, "split");
+
+    LOG(ERROR) << "Split: " << split;
+
+}
+
 void RDataFrameAssembler::update(int32_t level)
 {
     if(level == 0) {
         if(extension_ == "csv") {
             if (colIndex_ != schema_.size()) {
+                dumpDebugInfo();
                 std::ostringstream os;
                 os << "CSV Row (" << (totalRowsProcessed_ + 1) <<
                       ") has less records (" << colIndex_ <<

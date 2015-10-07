@@ -19,6 +19,8 @@ public:
 
     void configure(base::ConfigurationMap &conf);
 
+    base::ConfigurationMap getDebugInfo();
+
 private:
 
     blockreader::IBlockReaderPtr blockReader_;

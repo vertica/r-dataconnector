@@ -35,6 +35,10 @@ void OffsetSplitProducer::configure(base::ConfigurationMap& conf)
 
 }
 
+base::ConfigurationMap OffsetSplitProducer::getDebugInfo() {
+    return base::ConfigurationMap();
+}
+
 bool OffsetSplitProducer::hasNext()
 {
     if(!configured_) {

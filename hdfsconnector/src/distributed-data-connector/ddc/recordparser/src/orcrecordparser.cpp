@@ -982,6 +982,10 @@ boost::any OrcRecordParser::next()
 
 }
 
+base::ConfigurationMap OrcRecordParser::getDebugInfo() {
+    return base::ConfigurationMap();
+}
+
 bool OrcRecordParser::hasNext()
 {
     bool inLastStripe = (stripeIndex_ == (selectedStripes_.size()));

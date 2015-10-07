@@ -76,6 +76,12 @@ TEST_F(CsvRecordParserTest, Basic) {
     conf["schema"] = schema;
     conf["delimiter"] = ',';
     conf["commentCharacter"] = '#';
+
+    // only useful for debugging failures
+    conf["chunkStart"] = (uint64_t)0;
+    conf["chunkEnd"] = (uint64_t)0;
+    conf["url"] = std::string();
+
     recordParser->configure(conf);
     MyObserver o;
     recordParser->registerListener(&o);
@@ -148,6 +154,12 @@ TEST_P(CsvRecordParserParamTest, Generic){
     recordParserConf["schema"] = parseSchema(schema);
     recordParserConf["delimiter"] = ',';
     recordParserConf["commentCharacter"] = '#';
+
+    // only useful for debugging failures
+    recordParserConf["chunkStart"] = (uint64_t)0;
+    recordParserConf["chunkEnd"] = (uint64_t)0;
+    recordParserConf["url"] = std::string();
+
     r->configure(recordParserConf);
 
     assembler::IAssemblerPtr fakeAssembler = assembler::AssemblerFactory::makeAssembler("fake");

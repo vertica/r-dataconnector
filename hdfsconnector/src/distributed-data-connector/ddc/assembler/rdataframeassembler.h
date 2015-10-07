@@ -1,6 +1,8 @@
 #ifndef DDC_ASSEMBLER_RDATAFRAMEASSEMBLER_H
 #define DDC_ASSEMBLER_RDATAFRAMEASSEMBLER_H
 
+#include <libgen.h>
+
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -16,11 +18,13 @@
 
 #include "assembler/iassembler.h"
 #include "base/utils.h"
+#include "blockreader/block.h"
 #include "hdfsutils/hdfsinputstream.h"
 #include "hdfsutils/hdfsutils.h"
 #include "recordparser/csvrecordparser.h"
 #include "recordparser/orcrecordparser.h"
 #include "recordparser/recordparserfactory.h"
+#include "text/csv/rows.hpp"
 
 
 //include R the last, otherwise overwrites a lot of stuff
@@ -93,6 +97,7 @@ private:
      */
     SEXP ParseValue(recordparser::NodePtr& node, int level);
 
+    void dumpDebugInfo();
     /**
      */
     uint64_t colIndex_;
@@ -219,6 +224,9 @@ private:
 
     bool needUnprotect_;
     uint64_t numProtects_;
+
+    uint64_t chunkStart_;
+    uint64_t chunkEnd_;
 
 };
 

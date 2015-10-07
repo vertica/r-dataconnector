@@ -19,6 +19,8 @@ public:
     MOCK_METHOD1(registerListener, void(base::IObserver<int32_t> *));
     MOCK_METHOD1(configure, void(base::ConfigurationMap &));
 
+    MOCK_METHOD0(getDebugInfo, base::ConfigurationMap());
+
 };
 
 }//namespace testing

@@ -64,6 +64,13 @@ void DelimiterSplitProducer::configure(base::ConfigurationMap& conf)
 
 }
 
+base::ConfigurationMap DelimiterSplitProducer::getDebugInfo() {
+    base::ConfigurationMap conf;
+    conf["split"] = splitCopy_;
+    conf["block"] = block_;
+    return conf;
+}
+
 bool DelimiterSplitProducer::hasNext()
 {
     if(!configured_) {
@@ -153,6 +160,8 @@ SplitPtr DelimiterSplitProducer::next()
             }
             else {
                  SplitPtr res = SplitPtr(new Split(boost::shared_ptr<std::string>(new std::string(split_))));
+                 splitCopy_.clear();
+                 splitCopy_ = std::string(split_);
                  DLOG_IF(INFO, splitsProduced_ < 10) << "returning split: " << split_;
                  splitsProduced_++;
                  split_.clear();
