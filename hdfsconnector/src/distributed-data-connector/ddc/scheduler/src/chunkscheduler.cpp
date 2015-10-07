@@ -167,7 +167,7 @@ Plan ChunkScheduler::schedule() {
     for (uint64_t i = 0; i < chunks.size(); ++i) {
         uint64_t worker = chunkWorkerMap[chunks[i].id];
         std::string workerName = workerMap_[worker]->hostname();
-        LOG(INFO) << chunks[i] <<
+        DLOG(INFO) << chunks[i] <<
                      " -> " << workerName;
     }
 #endif
@@ -182,7 +182,7 @@ Plan ChunkScheduler::schedule() {
         for (uint64_t i = 0; i < chunks.size(); ++i) {
             os << "\t" << chunks.at(i) << std::endl;
         }
-        LOG(INFO) << workerName << ": " << std::endl << os.str();
+        DLOG(INFO) << workerName << ": " << std::endl << os.str();
     }
 
     return plan;
