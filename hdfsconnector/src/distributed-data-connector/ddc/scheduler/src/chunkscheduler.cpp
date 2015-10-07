@@ -129,7 +129,7 @@ Plan ChunkScheduler::schedule() {
 
                 base::ConfigurationMap conf;
                 conf["selectedStripes"] = base::utils::to_string(i);
-                conf["url"] = fileUrl_;
+                conf["url"] = protocol + "://" + f;
 
                 configurations.push_back(conf);
             }
