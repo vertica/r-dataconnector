@@ -8,12 +8,16 @@ namespace ddc {
 namespace blockreader {
 namespace testing {
 
-class PrefetchBlockReaderTest : public ::testing::Test {
+/**
+ * Disable tests for now
+ */
+
+class DISABLED_PrefetchBlockReaderTest : public ::testing::Test {
  protected:
-    PrefetchBlockReaderTest() {
+    DISABLED_PrefetchBlockReaderTest() {
   }
 
-  virtual ~PrefetchBlockReaderTest() {
+  virtual ~DISABLED_PrefetchBlockReaderTest() {
   }
 
   virtual void SetUp() {
@@ -23,13 +27,7 @@ class PrefetchBlockReaderTest : public ::testing::Test {
   }
 };
 
-/**
- * Disable tests for now
- */
-
-#if 0
-
-TEST_F(PrefetchBlockReaderTest, RealFile) {
+TEST_F(DISABLED_PrefetchBlockReaderTest, RealFile) {
     base::ConfigurationMap conf;
     conf["blocksize"] = (uint64_t)128*1024*1024;
     conf["filename"] = std::string("../ddc/test/data/test512MB.csv");
@@ -53,7 +51,7 @@ TEST_F(PrefetchBlockReaderTest, RealFile) {
     }
 }
 
-TEST_F(PrefetchBlockReaderTest, IOSlower) {
+TEST_F(DISABLED_PrefetchBlockReaderTest, IOSlower) {
     base::ConfigurationMap conf;
     conf["blocksize"] = (uint64_t)128*1024*1024;
     conf["filename"] = std::string("sleep://whateva");
@@ -78,7 +76,7 @@ TEST_F(PrefetchBlockReaderTest, IOSlower) {
     }
 }
 
-TEST_F(PrefetchBlockReaderTest, IOFaster) {
+TEST_F(DISABLED_PrefetchBlockReaderTest, IOFaster) {
     base::ConfigurationMap conf;
     conf["blocksize"] = (uint64_t)128*1024*1024;
     conf["filename"] = std::string("sleep://whateva");
@@ -103,7 +101,7 @@ TEST_F(PrefetchBlockReaderTest, IOFaster) {
     }
 }
 
-TEST_F(PrefetchBlockReaderTest, IOSame) {
+TEST_F(DISABLED_PrefetchBlockReaderTest, IOSame) {
     base::ConfigurationMap conf;
     conf["blocksize"] = (uint64_t)128*1024*1024;
     conf["filename"] = std::string("sleep://whateva");
@@ -128,7 +126,7 @@ TEST_F(PrefetchBlockReaderTest, IOSame) {
     }
 }
 
-TEST_F(PrefetchBlockReaderTest, IOZero) {
+TEST_F(DISABLED_PrefetchBlockReaderTest, IOZero) {
     base::ConfigurationMap conf;
     conf["blocksize"] = (uint64_t)128*1024*1024;
     conf["filename"] = std::string("sleep://whateva");
@@ -153,7 +151,7 @@ TEST_F(PrefetchBlockReaderTest, IOZero) {
     }
 }
 
-TEST_F(PrefetchBlockReaderTest, NoWaits) {
+TEST_F(DISABLED_PrefetchBlockReaderTest, NoWaits) {
     base::ConfigurationMap conf;
     conf["blocksize"] = (uint64_t)128*1024*1024;
     conf["filename"] = std::string("sleep://whateva");
@@ -178,7 +176,7 @@ TEST_F(PrefetchBlockReaderTest, NoWaits) {
     }
 }
 
-TEST_F(PrefetchBlockReaderTest, NonPowerOfTwo) {
+TEST_F(DISABLED_PrefetchBlockReaderTest, NonPowerOfTwo) {
     uint64_t start = 430556000;
     uint64_t end = 861112000;
     uint64_t numBytes = 128*1024*1024;
@@ -208,7 +206,7 @@ TEST_F(PrefetchBlockReaderTest, NonPowerOfTwo) {
         }
     }
 }
-#endif
+
 } // namespace testing
 } // namespace blockreader
 } // namespace ddc

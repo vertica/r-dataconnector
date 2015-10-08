@@ -1,3 +1,5 @@
+#include <cstdlib>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/any.hpp>
 #include <boost/format.hpp>
@@ -824,6 +826,72 @@ TEST_F(DdcTest, Hdfs512_10cols_2) {
 }
 TEST_F(DdcTest, Hdfs512_10cols_3) {
     helper(std::string("hdfs:///test512MB_10cols.csv"),3);
+}
+
+void randomizeChunk(const uint64_t start,
+                    const uint64_t end,
+                    uint64_t *chunkStart,
+                    uint64_t *chunkEnd) {
+    uint64_t n1 =  0;
+    uint64_t n2 =  0;
+    do {
+        n1 = start + ( std::rand() % ( end - start + 1 ) );
+        n2 = start + ( std::rand() % ( end - start + 1 ) );
+
+        if (n1 > n2) {
+            *chunkEnd = n1;
+            *chunkStart = n2;
+        }
+        else {
+            *chunkEnd = n2;
+            *chunkStart = n1;
+        }
+    } while (n1 == n2);
+}
+
+TEST_F(DdcTest, DISABLED_Hdfs512_10cols_randomized) {
+    for (uint64_t i = 0; i < 100; ++i) {
+        uint64_t chunkStart = 0;
+        uint64_t chunkEnd = 0;
+        randomizeChunk(0, 536871040, &chunkStart, &chunkEnd);
+        base::ConfigurationMap conf;
+        conf["chunkStart"] = chunkStart;
+        conf["chunkEnd"] = chunkEnd;
+        conf["schemaUrl"] = std::string("a0:int64,a1:int64,a2:int64,a3:int64,a4:int64,"
+                                        "a5:int64,a6:int64,a7:int64,a8:int64,a9:int64");
+        conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
+
+        Rcpp::List dataFrame =
+            *(boost::any_cast<RcppDataFramePtr>(
+                ddc_read("hdfs:///test512MB_10cols.csv", "rdataframe", conf)));
+
+
+        const uint64_t numCols = dataFrame.size();
+        if (numCols == 0) {
+            throw std::runtime_error("0 cols");
+        }
+        const Rcpp::NumericVector& firstCol = dataFrame[0];
+        const uint64_t numRows = firstCol.size();
+
+        uint64_t lastValue = 0;
+        for (uint64_t i = 0; i < numRows; ++i) {
+            for (uint64_t j = 0; j < numCols; ++j) {
+                const Rcpp::NumericVector& col = dataFrame[j];
+                if (i == 0 && j == 0) {
+                    lastValue = col[i];
+                }
+                else {
+                    if (col[i] != (lastValue + 1)) {
+                        std::ostringstream os;
+                        os << "Expected " << (lastValue + 1) <<
+                              " but got: " << col[i];
+                        throw std::runtime_error(os.str());
+                    }
+                    lastValue = col[i];
+                }
+            }
+        }
+    }
 }
 
 } // namespace testing
