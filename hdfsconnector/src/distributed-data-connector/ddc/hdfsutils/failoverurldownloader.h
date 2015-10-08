@@ -1,8 +1,12 @@
 #ifndef DDC_HDFSUTILS_FAILOVERURLDOWNLOADER_H
 #define DDC_HDFSUTILS_FAILOVERURLDOWNLOADER_H
 
+#include <unistd.h>
+
 #include <vector>
 #include <string>
+
+#include <glog/logging.h>
 
 #include "hdfsutils/basicurldownloader.h"
 

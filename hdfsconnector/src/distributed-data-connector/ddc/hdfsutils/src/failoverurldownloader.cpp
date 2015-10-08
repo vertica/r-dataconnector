@@ -61,10 +61,15 @@ int FailoverUrlDownloader::downloadWithRetries(const std::string &url, const Spe
         catch(CurlLowSpeedException& e) {
             retries--;
             numFailures_++;
+            LOG(ERROR) << "Transfer failed, retrying in 5 secs...";
+            sleep(5);
         }
         catch(CurlException& e) {
             retries--;
             numFailures_++;
+            LOG(ERROR) << "Transfer failed, retrying in 5 secs...";
+            sleep(5);
+
         }
         catch(HttpException& e) {
             throw;
