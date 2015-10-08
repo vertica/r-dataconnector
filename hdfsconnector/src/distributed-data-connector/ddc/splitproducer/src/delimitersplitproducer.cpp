@@ -52,6 +52,7 @@ void DelimiterSplitProducer::configure(base::ConfigurationMap& conf)
         if (numBytes > 0) {
             DLOG(INFO) << "prev, requesting block, offset: " << blockStart << " numBytes: " << numBytes;
             block_ = blockReader_->getBlock(blockStart, numBytes); //get previous block
+            requestedBlocks_.push_back(std::make_pair(blockStart, numBytes));
         }
         offsetInBlock_ = (offset_ > numBytes) ? numBytes - 1 : offset_ - 1;
         offset_ -= 1;//backtrack 1 to detect if we're in the middle of a record
@@ -68,6 +69,7 @@ base::ConfigurationMap DelimiterSplitProducer::getDebugInfo() {
     base::ConfigurationMap conf;
     conf["split"] = splitCopy_;
     conf["block"] = block_;
+    conf["requestedBlocks"] = requestedBlocks_;
     return conf;
 }
 
@@ -116,6 +118,7 @@ SplitPtr DelimiterSplitProducer::next()
                 DLOG(INFO) << "requesting block, offset: " << offset_ << " numBytes: " << numBytes;
                 LOG(INFO) <<  boost::format(" Completed %3.2f%%\r")  % (100 * (float)offset_/(float)fileEnd_);
                 block_ = blockReader_->getBlock(offset_, numBytes);
+                requestedBlocks_.push_back(std::make_pair(offset_, numBytes));
             }
             //DLOG(INFO) << "block read";
             offsetInBlock_ = 0;

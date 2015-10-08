@@ -54,29 +54,65 @@ static bool isCommentLine(const std::string& line,
 }
 
 void CsvRecordParser::dumpDebugInfo() {
+    std::string errorLog;
     base::ConfigurationMap conf = splitProducer_->getDebugInfo();
 
+    /**
+     * Csv row
+     */
     std::ostringstream os;
     for (uint64_t i = 0; i < row_.size(); ++i) {
         os << row_[i] << ", ";
     }
     os << std::endl;
     LOG(ERROR) << "Csv row: " << os.str();
+    errorLog += ("Csv row: " + os.str());
 
+    /**
+     * Block
+     */
     blockreader::BlockPtr block;
     GET_PARAMETER(block, blockreader::BlockPtr, "block");
 
     std::string filename = std::string("/tmp/") + std::string(basename((char *)url_.c_str())) + "_" +
             base::utils::to_string(chunkStart_) + "_" +
             base::utils::to_string(chunkEnd_) + "_" +
-            "_block.bin";
-    LOG(ERROR) << "Dumping block to file " << filename;
+            "_block.txt";
+    std::ostringstream os3;
+    os3 << "Dumping block to file " << filename;
+    LOG(ERROR) << os3.str();
+    errorLog += (os3.str() + "\n");
     base::utils::buffer2file(block->buffer, block->used, filename);
 
+    /**
+     * split
+     */
     std::string split;
     GET_PARAMETER(split, std::string, "split");
-
     LOG(ERROR) << "Split: " << split;
+    errorLog += ("Split: " + split + "\n");
+
+    /**
+     * requested blocks
+     */
+    std::vector<std::pair<uint64_t,uint64_t> > requestedBlocks;
+    #define DDC_COMMA ,
+    GET_PARAMETER(requestedBlocks, std::vector<std::pair<uint64_t DDC_COMMA uint64_t> >, "requestedBlocks");
+    #undef DDC_COMMA
+    std::ostringstream os2;
+    os2 << "Requested blocks: " << std::endl;
+    for (uint64_t i = 0; i < requestedBlocks.size(); ++i) {
+        os2 << "\t" << requestedBlocks[i].first << ", " << requestedBlocks[i].second;
+    }
+    os2 << std::endl;
+    LOG(ERROR) << os2.str();
+    errorLog += os2.str();
+    std::string filename2 = std::string("/tmp/") + std::string(basename((char *)url_.c_str())) + "_" +
+            base::utils::to_string(chunkStart_) + "_" +
+            base::utils::to_string(chunkEnd_) + "_" +
+            "_errorlog.txt";
+    base::utils::buffer2file((uint8_t *)errorLog.data(), errorLog.size(), filename2);
+
 }
 
 boost::any CsvRecordParser::next(){
@@ -193,6 +229,7 @@ base::ConfigurationMap CsvRecordParser::getDebugInfo() {
     base::ConfigurationMap spConf = splitProducer_->getDebugInfo();
     conf["block"] = spConf["block"];
     conf["split"] = spConf["split"];
+    conf["requestedBlocks"] = spConf["requestedBlocks"];
     return conf;
 }
 

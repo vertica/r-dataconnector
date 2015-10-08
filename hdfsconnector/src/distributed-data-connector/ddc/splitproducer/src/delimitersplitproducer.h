@@ -2,6 +2,7 @@
 #define DDC_SPLITPRODUCER_DELIMITERSPLITPRODUCER_H
 
 #include <string>
+#include <utility>
 #include <vector>
 #include "splitproducer/isplitproducer.h"
 
@@ -41,6 +42,8 @@ private:
     bool configured_;
     bool skipRecord_;
     bool skipHeader_;
+
+    std::vector<std::pair<uint64_t,uint64_t> > requestedBlocks_;
 
 
 };
