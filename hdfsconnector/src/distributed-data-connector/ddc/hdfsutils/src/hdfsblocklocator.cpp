@@ -262,7 +262,16 @@ BufferPtr HdfsBlockLocator::getBlock(const uint64_t blockStart, const uint64_t n
             throw std::runtime_error(errorStr);
         }
         buffer->insert(buffer->end(),blockBuffer->begin(), blockBuffer->end());
+        DLOG(INFO) << "Inserted " << blockBuffer->size() <<
+                      " bytes. New total size: " << buffer->size();
     }
+    if (buffer->size() != numBytes) {
+        std::ostringstream os;
+        os << "Error in hdfsblocklocator::getBlock, requested: " <<
+              numBytes << " bytes but returned: " << buffer->size();
+        throw std::runtime_error(os.str());
+    }
+
     return buffer;
 }
 
