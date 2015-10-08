@@ -134,81 +134,81 @@ static size_t writeCallback(void *ptr, size_t size, size_t nmemb, void *userdata
 
 int BasicUrlDownloader::downloadSpeedLimit(const std::string &url, long lowSpeedLimit, long lowSpeedTime,BufferPtr buffer){
 
-  CURLcode res = CURLE_OK;
-  Progress prog;
+    // always clear buffer at the beginning
+    buffer->clear();
+
+    CURLcode res = CURLE_OK;
+    Progress prog;
 
 
-  if(curl_) {
-    prog.lastruntime = 0;
-    prog.curl = curl_;
+    if(curl_) {
+        prog.lastruntime = 0;
+        prog.curl = curl_;
 
-    //curl_easy_setopt(curl, CURLOPT_URL, "http://example.com/");
-    DLOG(INFO) << "downloading: " << url;
-    curl_easy_setopt(curl_, CURLOPT_URL, url.c_str());
+        //curl_easy_setopt(curl, CURLOPT_URL, "http://example.com/");
+        DLOG(INFO) << "downloading: " << url;
+        curl_easy_setopt(curl_, CURLOPT_URL, url.c_str());
 
-    curl_easy_setopt(curl_, CURLOPT_BUFFERSIZE, 1*1024*1024);  // TODO magic
+        curl_easy_setopt(curl_, CURLOPT_BUFFERSIZE, 1*1024*1024);  // TODO magic
 
-    curl_easy_setopt(curl_, CURLOPT_PROGRESSFUNCTION, __onProgressUpdate);
-    /* pass the struct pointer into the progress function */
-    curl_easy_setopt(curl_, CURLOPT_PROGRESSDATA, &prog);
+        curl_easy_setopt(curl_, CURLOPT_PROGRESSFUNCTION, __onProgressUpdate);
+        /* pass the struct pointer into the progress function */
+        curl_easy_setopt(curl_, CURLOPT_PROGRESSDATA, &prog);
 
-#if LIBCURL_VERSION_NUM >= 0x072000
-    /* xferinfo was introduced in 7.32.0, no earlier libcurl versions will
-       compile as they won't have the symbols around.
+        #if LIBCURL_VERSION_NUM >= 0x072000
+            /* xferinfo was introduced in 7.32.0, no earlier libcurl versions will
+               compile as they won't have the symbols around.
 
-       If built with a newer libcurl, but running with an older libcurl:
-       curl_easy_setopt() will fail in run-time trying to set the new
-       callback, making the older callback get used.
+               If built with a newer libcurl, but running with an older libcurl:
+               curl_easy_setopt() will fail in run-time trying to set the new
+               callback, making the older callback get used.
 
-       New libcurls will prefer the new callback and instead use that one even
-       if both callbacks are set. */
+               New libcurls will prefer the new callback and instead use that one even
+               if both callbacks are set. */
 
-    curl_easy_setopt(curl_, CURLOPT_XFERINFOFUNCTION, onProgressUpdate);
-    /* pass the struct pointer into the xferinfo function, note that this is
-       an alias to CURLOPT_PROGRESSDATA */
-    curl_easy_setopt(curl_, CURLOPT_XFERINFODATA, &prog);
-#endif
+            curl_easy_setopt(curl_, CURLOPT_XFERINFOFUNCTION, onProgressUpdate);
+            /* pass the struct pointer into the xferinfo function, note that this is
+               an alias to CURLOPT_PROGRESSDATA */
+            curl_easy_setopt(curl_, CURLOPT_XFERINFODATA, &prog);
+        #endif
 
-    curl_easy_setopt(curl_, CURLOPT_NOPROGRESS, 0L);
+        curl_easy_setopt(curl_, CURLOPT_NOPROGRESS, 0L);
 
-    curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, writeCallback);
-    curl_easy_setopt(curl_, CURLOPT_WRITEDATA, (void *)&buffer);
+        curl_easy_setopt(curl_, CURLOPT_WRITEFUNCTION, writeCallback);
+        curl_easy_setopt(curl_, CURLOPT_WRITEDATA, (void *)&buffer);
 
-    if(lowSpeedLimit != -1)
-        curl_easy_setopt(curl_, CURLOPT_LOW_SPEED_LIMIT, lowSpeedLimit);
-    if(lowSpeedTime != -1)
-        curl_easy_setopt(curl_, CURLOPT_LOW_SPEED_TIME, lowSpeedTime);
+        if(lowSpeedLimit != -1)
+            curl_easy_setopt(curl_, CURLOPT_LOW_SPEED_LIMIT, lowSpeedLimit);
+        if(lowSpeedTime != -1)
+            curl_easy_setopt(curl_, CURLOPT_LOW_SPEED_TIME, lowSpeedTime);
 
 
-    res = curl_easy_perform(curl_);
+        res = curl_easy_perform(curl_);
 
-    if(res != CURLE_OK) {
-        if (res == CURLE_OPERATION_TIMEDOUT) {
-            throw CurlLowSpeedException(curl_easy_strerror(res));
+        if(res != CURLE_OK) {
+            if (res == CURLE_OPERATION_TIMEDOUT) {
+                throw CurlLowSpeedException(curl_easy_strerror(res));
+            }
+            else if (res == CURLE_ABORTED_BY_CALLBACK) {
+                throw CurlAbortedByCallbackException(curl_easy_strerror(res));
+            }
+            else {
+                throw CurlException(curl_easy_strerror(res));
+            }
         }
-        else if (res == CURLE_ABORTED_BY_CALLBACK) {
-            throw CurlAbortedByCallbackException(curl_easy_strerror(res));
-        }
-        else {
+
+        long httpCode;
+        CURLcode res2 = curl_easy_getinfo(curl_, CURLINFO_RESPONSE_CODE, &httpCode);
+        if(res2 != CURLE_OK) {
             throw CurlException(curl_easy_strerror(res));
         }
+
+        if (httpCode != 200) {
+            std::string error(buffer->begin(), buffer->end());
+            throw HttpException(error);
+        }
     }
-
-    long httpCode;
-    CURLcode res2 = curl_easy_getinfo(curl_, CURLINFO_RESPONSE_CODE, &httpCode);
-    if(res2 != CURLE_OK) {
-        throw CurlException(curl_easy_strerror(res));
-    }
-
-    if (httpCode != 200) {
-        std::string error(buffer->begin(), buffer->end());
-        throw HttpException(error);
-    }
-
-    /* always cleanup */
-
-  }
-  return 0;
+    return 0;
 }
 
 
