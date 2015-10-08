@@ -766,7 +766,65 @@ INSTANTIATE_TEST_CASE_P(OrcFiles, DdcOrcTest, ::testing::Values(
     //OrcTestConfig("../recordparser/orc/examples/orc-file-11-format.orc", 7500 * 14, ORC_OTHER_EXAMPLE))  // throws in ORC lib
 ));
 
+void helper(const std::string& url, const uint64_t i) {
+    const uint64_t NUM_ROWS = 838861;
+    const uint64_t NUM_COLS = 10;
+    const uint64_t RECORDS_PER_CHUNK = NUM_ROWS * NUM_COLS;
+    //for (uint64_t i = 0; i < 4; ++i) {
+        base::ConfigurationMap conf;
+        conf["chunkStart"] = (uint64_t)(i)*128*1024*1024;
+        conf["chunkEnd"] = (uint64_t)(i+1)*128*1024*1024;
+        if (i == 3) {
+            conf["chunkEnd"] = 536871040;
+        }
+        conf["schemaUrl"] = std::string("a0:int64,a1:int64,a2:int64,a3:int64,a4:int64,"
+                                        "a5:int64,a6:int64,a7:int64,a8:int64,a9:int64");
+        conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
 
+        Rcpp::List dataFrame =
+            *(boost::any_cast<RcppDataFramePtr>(
+                ddc_read(url, "rdataframe", conf)));
+
+
+        Rcpp::NumericVector firstCol = dataFrame[0];
+        Rcpp::NumericVector lastCol = dataFrame[NUM_COLS-1];
+        EXPECT_EQ((uint64_t)firstCol.size(), NUM_ROWS);
+        EXPECT_EQ((uint64_t)lastCol.size(), NUM_ROWS);
+
+        EXPECT_EQ(firstCol[0],0+(i*RECORDS_PER_CHUNK));
+        EXPECT_EQ(firstCol[NUM_ROWS - 1], ((NUM_ROWS-1) * NUM_COLS) +(i*RECORDS_PER_CHUNK));
+        EXPECT_EQ(lastCol[0], (NUM_COLS - 1) +(i*RECORDS_PER_CHUNK));
+        EXPECT_EQ(lastCol[NUM_ROWS - 1], ((NUM_ROWS * NUM_COLS) - 1)+(i*RECORDS_PER_CHUNK));
+    //}
+
+}
+
+TEST_F(DdcTest, Local512_10cols_0) {
+    helper(std::string("../ddc/test/data/test512MB_10cols.csv"),0);
+}
+TEST_F(DdcTest, Local512_10cols_1) {
+    helper(std::string("../ddc/test/data/test512MB_10cols.csv"),0);
+}
+TEST_F(DdcTest, Local512_10cols_2) {
+    helper(std::string("../ddc/test/data/test512MB_10cols.csv"),0);
+}
+TEST_F(DdcTest, Local512_10cols_3) {
+    helper(std::string("../ddc/test/data/test512MB_10cols.csv"),0);
+}
+
+
+TEST_F(DdcTest, Hdfs512_10cols_0) {
+    helper(std::string("hdfs:///test512MB_10cols.csv"),0);
+}
+TEST_F(DdcTest, Hdfs512_10cols_1) {
+    helper(std::string("hdfs:///test512MB_10cols.csv"),1);
+}
+TEST_F(DdcTest, Hdfs512_10cols_2) {
+    helper(std::string("hdfs:///test512MB_10cols.csv"),2);
+}
+TEST_F(DdcTest, Hdfs512_10cols_3) {
+    helper(std::string("hdfs:///test512MB_10cols.csv"),3);
+}
 
 } // namespace testing
 } // namespace ddc
