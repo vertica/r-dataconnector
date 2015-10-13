@@ -171,7 +171,11 @@ std::vector<HdfsBlock> HdfsBlockLocator::getHdfsBlocks(const std::string &path){
     if(!configured_) {
         throw std::runtime_error("Need to configure first");
     }
-    std::string json = getHdfsBlockJson(path);
+    std::string key = std::string("blockLocationJson_") + path;
+    if (!fileStatCache_->contains(key)) {
+        fileStatCache_->set(key, getHdfsBlockJson(path));
+    }
+    std::string json = boost::any_cast<std::string>(fileStatCache_->get(key));
     return parseJson(json);
 }
 
