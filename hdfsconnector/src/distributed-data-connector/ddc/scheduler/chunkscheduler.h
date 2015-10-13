@@ -85,6 +85,8 @@ private:
 
     bool configured_;
     bool planCreated_;
+
+    boost::shared_ptr<base::Cache> fileStatCache_;
 };
 
 }  // namespace scheduler

@@ -19,10 +19,12 @@ void HdfsBlockReader::configure(base::ConfigurationMap &conf)
 {
     GET_PARAMETER(filename_, std::string, "filename");
     GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
+    GET_PARAMETER(fileStatCache_, boost::shared_ptr<base::Cache>, "fileStatCache");
 
     hdfsutils::HdfsFile file(filename_);
     base::ConfigurationMap blockLocatorConf;
     blockLocatorConf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+    blockLocatorConf["fileStatCache"] = fileStatCache_;
     file.configure(blockLocatorConf);
     base::FileStatus s = file.stat();
     blockSize_ = s.blockSize;
@@ -63,6 +65,7 @@ BlockPtr HdfsBlockReader::getBlock(const uint64_t blockStart, const uint64_t num
     base::ConfigurationMap conf;
     conf["filename"] = filename_;
     conf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+    conf["fileStatCache"] = fileStatCache_;
     locator.configure(conf);
     hdfsutils::BufferPtr buffer = locator.getBlock(blockStart, numBytes);
 

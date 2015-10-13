@@ -228,6 +228,8 @@ private:
     uint64_t chunkStart_;
     uint64_t chunkEnd_;
 
+    boost::shared_ptr<base::Cache> fileStatCache_;
+
 };
 
 typedef boost::shared_ptr<RDataFrameAssembler> RDataFrameAssemblerPtr;

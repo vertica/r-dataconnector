@@ -52,6 +52,9 @@ void HdfsBlockLocator::configure(base::ConfigurationMap &conf) {
 
     GET_PARAMETER(filename_, std::string, "filename");
     GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
+
+    GET_PARAMETER(fileStatCache_, boost::shared_ptr<base::Cache>, "fileStatCache");
+
     configured_ = true;
 }
 
@@ -222,6 +225,7 @@ BufferPtr HdfsBlockLocator::getBlock(const uint64_t blockStart, const uint64_t n
 
     base::ConfigurationMap blockLocatorConf;
     blockLocatorConf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+    blockLocatorConf["fileStatCache"] = fileStatCache_;
     HdfsFile file(filename_);
     file.configure(blockLocatorConf);
     base::FileStatus s = file.stat();
@@ -307,6 +311,7 @@ std::vector<std::string> HdfsBlockLocator::getUrls(const HdfsBlockRange &block) 
     hdfsutils::HdfsFile file(filename_);
     base::ConfigurationMap hdfsconf;
     hdfsconf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+    hdfsconf["fileStatCache"] = fileStatCache_;
     file.configure(hdfsconf);
     webhdfs_conf_t *conf = file.conf();
     if(!conf) {

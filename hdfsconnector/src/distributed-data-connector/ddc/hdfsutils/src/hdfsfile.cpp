@@ -51,6 +51,9 @@ void HdfsFile::configure(base::ConfigurationMap &conf) {
     if(!f_) {
         throw std::runtime_error("error in webhdfs_file_open");
     }
+
+    GET_PARAMETER(fileStatCache_, boost::shared_ptr<base::Cache>, "fileStatCache");
+
     configured_ = true;
 }
 
@@ -127,23 +130,27 @@ base::FileStatus HdfsFile::stat()
     if(!configured_) {
         throw std::runtime_error("Need to configure first");
     }
-    char *error = NULL;
-    webhdfs_fstat_t *stat = webhdfs_stat(fs_, filename_.c_str(), &error);
-    if(stat == NULL) {
-        std::string errorStr(error);
-        if (error) {
-            free(error);
+
+    if (!fileStatCache_->contains(filename_)) {
+        char *error = NULL;
+        webhdfs_fstat_t *stat = webhdfs_stat(fs_, filename_.c_str(), &error);
+        if(stat == NULL) {
+            std::string errorStr(error);
+            if (error) {
+                free(error);
+            }
+            throw std::runtime_error(errorStr);
         }
-        throw std::runtime_error(errorStr);
+        base::FileStatus s;
+        s.blockSize = stat->block;
+        s.length = stat->length;
+        s.replicationFactor = stat->replication;
+        webhdfs_fstat_free(stat);
+
+        fileStatCache_->set(filename_, s);
     }
-    base::FileStatus s;
-    s.blockSize = stat->block;
-    s.length = stat->length;
-    s.replicationFactor = stat->replication;
-    webhdfs_fstat_free(stat);
-    return s;
 
-
+    return boost::any_cast<base::FileStatus>(fileStatCache_->get(filename_));
 }
 
 HdfsFile::~HdfsFile() {

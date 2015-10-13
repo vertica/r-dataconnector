@@ -41,6 +41,7 @@ class ChunkSchedulerTest : public ::testing::Test {
       options["schema"] = std::string("a:int64,b:string");
       conf["options"] = options;
       conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
+      conf["fileStatCache"] = boost::shared_ptr<base::Cache>(new base::Cache());
       chunkScheduler.configure(conf);
   }
 
@@ -87,6 +88,8 @@ void helper(const std::string& fileUrl,
     options["schema"] = std::string("a:int64,b:string");
     conf["options"] = options;
     conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
+    conf["fileStatCache"] = boost::shared_ptr<base::Cache>(new base::Cache());
+
     chunkScheduler.configure(conf);
 
     chunkScheduler.schedule();

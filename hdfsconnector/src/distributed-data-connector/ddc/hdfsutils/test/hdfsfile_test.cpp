@@ -45,6 +45,7 @@ TEST_F(HdfsFileTest, Hdfs) {
     HdfsFile file("/ex001.csv");
     base::ConfigurationMap conf;
     conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
+    conf["fileStatCache"] = boost::shared_ptr<base::Cache>(new base::Cache());
     file.configure(conf);
     base::FileStatus s = file.stat();
     EXPECT_EQ(s.blockSize, (uint64_t)128*1024*1024);
@@ -56,6 +57,7 @@ TEST_F(HdfsFileTest, HdfsWrite) {
     HdfsFile file("/written.csv");
     base::ConfigurationMap conf;
     conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
+    conf["fileStatCache"] = boost::shared_ptr<base::Cache>(new base::Cache());
     conf["overwrite"] = true;
     file.configure(conf);
     std::string contents("1,aaa\n2,bbb,3,ccc");

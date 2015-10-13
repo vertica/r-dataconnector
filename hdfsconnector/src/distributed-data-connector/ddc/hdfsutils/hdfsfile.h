@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <string>
 #include <boost/shared_ptr.hpp>
+#include "base/cache.h"
 #include "base/configurationmap.h"
 #include "base/ifile.h"
 #include "webhdfs/webhdfs.h"
@@ -39,6 +40,8 @@ private:
     std::string hdfsConfigurationFile_;
     bool overwrite_;
     bool configured_;
+
+    boost::shared_ptr<base::Cache> fileStatCache_;
 
 };
 

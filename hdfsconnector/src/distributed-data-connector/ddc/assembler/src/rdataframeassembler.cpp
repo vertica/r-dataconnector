@@ -43,6 +43,7 @@ void RDataFrameAssembler::configure(base::ConfigurationMap &conf)
     std::string protocol = base::utils::getProtocol(url_);
     if (hdfsutils::isHdfs(protocol)) {
         GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
+        GET_PARAMETER(fileStatCache_, boost::shared_ptr<base::Cache>, "fileStatCache");
     }
 
     GET_PARAMETER(recordParser_, recordparser::IRecordParserPtr, "recordParser");
@@ -83,6 +84,7 @@ void RDataFrameAssembler::configureOrc()
         hdfsutils::HdfsInputStream *p = new hdfsutils::HdfsInputStream(filename);
         base::ConfigurationMap hdfsconf;
         hdfsconf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+        hdfsconf["fileStatCache"] = fileStatCache_;
         p->configure(hdfsconf);
         std::unique_ptr<orc::InputStream> inputStream(p);
         orcReader = orc::createReader(std::move(inputStream), opts);

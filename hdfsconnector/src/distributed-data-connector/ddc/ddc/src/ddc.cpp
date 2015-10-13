@@ -81,9 +81,13 @@ std::vector<std::string> schema2colnames(const std::string &schema) {
 
 std::vector<std::string> orccolnames(const std::string& url,
                                      const std::string& hdfsConfigurationFile) {
+    boost::shared_ptr<base::Cache> fileStatCache(new base::Cache());
+
     base::ConfigurationMap conf;
     conf["url"] = url;
     conf["hdfsConfigurationFile"] = hdfsConfigurationFile;
+    conf["fileStatCache"] = fileStatCache;
+
     std::vector<uint64_t> stripes;
     conf["selectedStripes"] = stripes;
     recordparser::IRecordParserPtr p = boost::shared_ptr<recordparser::IRecordParser>(new recordparser::OrcRecordParser());
@@ -93,6 +97,7 @@ std::vector<std::string> orccolnames(const std::string& url,
     base::ConfigurationMap conf2;
     conf2["url"] = url;
     conf2["hdfsConfigurationFile"] = hdfsConfigurationFile;
+    conf2["fileStatCache"] = fileStatCache;
     conf2["format"] = std::string("row");
     conf2["recordParser"] = p;
     conf2["fileType"] = std::string("orc");
@@ -111,6 +116,7 @@ void ddc_write(const std::string& url,
     base::IFilePtr file = hdfsutils::FileFactory::makeFile(protocol, filename, "w");
     if (hdfsutils::isHdfs(protocol)) {
         hdfsutils::HdfsFile *ptr = (hdfsutils::HdfsFile *)file.get();
+        conf["fileStatCache"] = boost::shared_ptr<base::Cache>(new base::Cache());
         ptr->configure(conf);
     }
     size_t bytesWritten = file->write((void *)bytes.data(), bytes.length());  // will throw on error
@@ -148,10 +154,14 @@ boost::any ddc_read(const std::string &url,
     blockreader::IBlockReaderPtr blockReader = blockreader::BlockReaderFactory::makeBlockReader(protocol);
 
     base::IFilePtr file = hdfsutils::FileFactory::makeFile(protocol, filename, "r");
+
+    boost::shared_ptr<base::Cache>fileStatCache(new base::Cache());
+
     if( hdfsutils::isHdfs(protocol)) {
         hdfsutils::HdfsFile *p = (hdfsutils::HdfsFile *)file.get();
         base::ConfigurationMap hdfsconf;
         hdfsconf["hdfsConfigurationFile"] = conf["hdfsConfigurationFile"];
+        hdfsconf["fileStatCache"] = fileStatCache;
         p->configure(hdfsconf);
     }
     base::FileStatus status = file->stat();
@@ -260,6 +270,7 @@ boost::any ddc_read(const std::string &url,
 
     blockReaderConf["blocksize"] = static_cast<uint64_t>(32 * 1024 * 1024); //TODO camelcase, only makes sense for local
     blockReaderConf["hdfsConfigurationFile"] = conf["hdfsConfigurationFile"];
+    blockReaderConf["fileStatCache"] = fileStatCache;
     blockReaderConf["splitEnd"] = static_cast<uint64_t>(chunkEnd);
     blockReader->configure(blockReaderConf);
 
@@ -305,6 +316,7 @@ boost::any ddc_read(const std::string &url,
     }
 
     recordParserConf["hdfsConfigurationFile"] = conf["hdfsConfigurationFile"];
+    recordParserConf["fileStatCache"] = fileStatCache;
     recordParser->configure(recordParserConf);
 
     std::string format = "row"; //default to row
@@ -317,6 +329,7 @@ boost::any ddc_read(const std::string &url,
     assemblerConf["schema"] = schema;
     assemblerConf["url"] = url;
     assemblerConf["hdfsConfigurationFile"] = conf["hdfsConfigurationFile"];
+    assemblerConf["fileStatCache"] = fileStatCache;
     assemblerConf["chunkStart"] = static_cast<uint64_t>(chunkStart);
     assemblerConf["chunkEnd"] = static_cast<uint64_t>(chunkEnd);
     assembler->configure(assemblerConf);
@@ -421,6 +434,7 @@ Rcpp::List create_plan(const std::string& url,
         //PASS
     }
 
+    conf["fileStatCache"] = boost::shared_ptr<base::Cache>(new base::Cache);
     scheduler::ChunkScheduler chunkScheduler;
     chunkScheduler.configure(conf);
 

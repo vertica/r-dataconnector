@@ -51,6 +51,7 @@ private:
     std::string hdfsConfigurationFile_;
     std::string filename_;
     bool configured_;
+    boost::shared_ptr<base::Cache> fileStatCache_;
 };
 
 typedef boost::shared_ptr<HdfsBlockLocator> HdfsBlockLocatorPtr;

@@ -20,7 +20,10 @@ HdfsInputStream::~HdfsInputStream()
 void HdfsInputStream::configure(base::ConfigurationMap &conf) {
     base::ConfigurationMap hdfsconf;
     GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
+    GET_PARAMETER(fileStatCache_, boost::shared_ptr<base::Cache>, "fileStatCache");
+
     hdfsconf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+    hdfsconf["fileStatCache"] = fileStatCache_;
     hdfsFile_->configure(hdfsconf);
     stat_ = hdfsFile_->stat();
     configured_ = true;
@@ -73,6 +76,7 @@ orc::Buffer *HdfsInputStream::read(uint64_t offset, uint64_t length, orc::Buffer
     base::ConfigurationMap conf;
     conf["filename"] = url_;
     conf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+    conf["fileStatCache"] = fileStatCache_;
     locator.configure(conf);
     BufferPtr block = locator.getBlock(offset, length);
     if(block->size() != length) {

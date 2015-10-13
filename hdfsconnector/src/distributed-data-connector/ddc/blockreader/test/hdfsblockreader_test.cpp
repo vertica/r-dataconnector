@@ -45,6 +45,7 @@ class HdfsBlockReaderTest : public ::testing::Test {
       base::ConfigurationMap conf;
       conf["filename"] = filename;
       conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
+      conf["fileStatCache"] = boost::shared_ptr<base::Cache>(new base::Cache());
       b->configure(conf);
       BlockPtr block = b->getBlock(0, filesize);
 

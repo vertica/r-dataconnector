@@ -24,7 +24,9 @@ void ChunkScheduler::configure(base::ConfigurationMap &conf)
         GET_PARAMETER(hdfsBlockLocator_, hdfsutils::HdfsBlockLocatorPtr, "hdfsBlockLocator");
         base::ConfigurationMap hdfsConf;
         GET_PARAMETER(hdfsConfigurationFile_, std::string, "hdfsConfigurationFile");
+        GET_PARAMETER(fileStatCache_, boost::shared_ptr<base::Cache>, "fileStatCache");
         hdfsConf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+        hdfsConf["fileStatCache"] = fileStatCache_;
         hdfsConf["filename"] = base::utils::stripProtocol(fileUrl_);
         hdfsBlockLocator_->configure(hdfsConf);
     }
@@ -103,6 +105,7 @@ Plan ChunkScheduler::schedule() {
                 hdfsutils::HdfsInputStream *p = new hdfsutils::HdfsInputStream(f);
                 base::ConfigurationMap hdfsconf;
                 hdfsconf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+                hdfsconf["fileStatCache"] = fileStatCache_;
                 p->configure(hdfsconf);
                 std::unique_ptr<orc::InputStream> inputStream(p);
                 orcReader = orc::createReader(std::move(inputStream), opts);
@@ -289,6 +292,7 @@ void ChunkScheduler::divide(const uint64_t numExecutors,
             hdfsutils::HdfsFile *p = (hdfsutils::HdfsFile *)file.get();
             base::ConfigurationMap conf;
             conf["hdfsConfigurationFile"] = hdfsConfigurationFile_;
+            conf["fileStatCache"] = fileStatCache_;
             p->configure(conf);
         }
         uint64_t fileSize = (file->stat()).length;

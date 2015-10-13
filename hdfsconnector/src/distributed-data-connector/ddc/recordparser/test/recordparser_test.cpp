@@ -150,6 +150,7 @@ TEST_P(OrcTest, General)
     }
     conf["selectedStripes"] = selectedStripes;
     conf["hdfsConfigurationFile"] = std::string("../ddc/test/data/server.conf");
+    conf["fileStatCache"] = boost::shared_ptr<base::Cache>(new base::Cache());
 
     parser.configure(conf);
     uint64_t numRecords = 0;

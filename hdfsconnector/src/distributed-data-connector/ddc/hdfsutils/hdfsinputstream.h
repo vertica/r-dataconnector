@@ -50,6 +50,8 @@ class HdfsInputStream : public orc::InputStream {
     base::FileStatus stat_;
     hdfsutils::HdfsFilePtr hdfsFile_;
 
+    boost::shared_ptr<base::Cache> fileStatCache_;
+
     bool configured_;
 };
 

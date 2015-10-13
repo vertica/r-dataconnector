@@ -90,7 +90,8 @@ void OrcRecordParser::configure(base::ConfigurationMap &conf)
     if(protocol == "hdfs" || protocol == "http" || protocol == "webhdfs") {
         hdfsutils::HdfsInputStream *p = new hdfsutils::HdfsInputStream(filename);
         base::ConfigurationMap hdfsconf;
-        GET_PARAMETER(hdfsconf["hdfsConfigurationFile"], std::string, "hdfsConfigurationFile");
+        hdfsconf["hdfsConfigurationFile"] = conf["hdfsConfigurationFile"];
+        hdfsconf["fileStatCache"] = conf["fileStatCache"];
         p->configure(hdfsconf);
         std::unique_ptr<orc::InputStream> inputStream(p);
         orcReader_ = orc::createReader(std::move(inputStream), opts);

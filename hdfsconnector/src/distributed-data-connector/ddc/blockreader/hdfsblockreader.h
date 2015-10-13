@@ -57,6 +57,7 @@ private:
     bool configured_;
 
     uint64_t fileSize_;
+    boost::shared_ptr<base::Cache> fileStatCache_;
 };
 
 } // namespace blockreader

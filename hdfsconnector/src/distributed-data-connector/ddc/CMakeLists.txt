@@ -140,6 +140,7 @@ SET(ddc_dep_libs ddc_s hdfsutils_s webhdfs_s base_s orc_s
 # tests
 SET(test_sources
         assembler/test/assembler_test.cpp
+        base/test/cache_test.cpp
         recordparser/test/recordparser_test.cpp
         recordparser/test/csvrecordparser_test.cpp
         recordparser/test/textcsv_test.cpp
