@@ -1,3 +1,20 @@
+/*
+(c) Copyright 2015 Hewlett Packard Enterprise Development LP
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+
+
 #include "basicurldownloader.h"
 #include <string.h>
 #include <boost/format.hpp>
@@ -146,7 +163,7 @@ int BasicUrlDownloader::downloadSpeedLimit(const std::string &url, long lowSpeed
         prog.curl = curl_;
 
         //curl_easy_setopt(curl, CURLOPT_URL, "http://example.com/");
-        DLOG(INFO) << "downloading: " << url;
+        DLOG(INFO) << "id: " << this << " downloading: " << url;
         curl_easy_setopt(curl_, CURLOPT_URL, url.c_str());
 
         curl_easy_setopt(curl_, CURLOPT_BUFFERSIZE, 1*1024*1024);  // TODO magic
