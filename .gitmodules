@@ -1,12 +1,12 @@
-[submodule "hdfsconnector/src/distributed-data-connector/ddc/recordparser/text-csv"]
-	path = hdfsconnector/src/distributed-data-connector/ddc/recordparser/text-csv
+[submodule "dataconnector/src/distributed-data-connector/ddc/recordparser/text-csv"]
+	path = dataconnector/src/distributed-data-connector/ddc/recordparser/text-csv
 	url = https://github.com/vertica/text-csv
 	branch = master
-[submodule "hdfsconnector/src/distributed-data-connector/ddc/recordparser/orc"]
-	path = hdfsconnector/src/distributed-data-connector/ddc/recordparser/orc
+[submodule "dataconnector/src/distributed-data-connector/ddc/recordparser/orc"]
+	path = dataconnector/src/distributed-data-connector/ddc/recordparser/orc
 	url = https://github.com/vertica/orc
 	branch = c++
-[submodule "hdfsconnector/src/distributed-data-connector/ddc/hdfsutils/webhdfs"]
-	path = hdfsconnector/src/distributed-data-connector/ddc/hdfsutils/webhdfs
+[submodule "dataconnector/src/distributed-data-connector/ddc/hdfsutils/webhdfs"]
+	path = dataconnector/src/distributed-data-connector/ddc/hdfsutils/webhdfs
 	url = https://github.com/vertica/webhdfs
 	branch = master

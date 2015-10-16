@@ -1,6 +1,6 @@
 ### Introduction
 
-The `hdfsconnector` package allows R users to read CSV and ORC files from HDFS and the local file system. 
+The `dataconnector` package allows R users to read CSV and ORC files from HDFS and the local file system. 
 
 The package is extensible and new file formats and file systems can be added easily.
 
@@ -16,12 +16,12 @@ Supported file systems:
 
 ### Installation
 
-    $ git clone --recursive https://github.com/vertica/r-hdfsconnector.git 
-    $ R CMD INSTALL r-hdfsconnector/hdfsconnector
+    $ git clone --recursive https://github.com/vertica/r-dataconnector.git 
+    $ R CMD INSTALL r-dataconnector/dataconnector
 
 ### Examples
 
-    library(hdfsconnector)
+    library(dataconnector)
 
     # Load a CSV file from the local file system
     df <- csv2dataframe(url='/tmp/test.csv', schema='age:int64,name:string')
