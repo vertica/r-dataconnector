@@ -18,6 +18,7 @@
 #ifndef DDC_RECORDPARSER_CSVRECORDPARSER_H
 #define DDC_RECORDPARSER_CSVRECORDPARSER_H
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <boost/variant.hpp>

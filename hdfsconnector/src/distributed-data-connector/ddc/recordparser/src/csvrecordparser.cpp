@@ -152,7 +152,17 @@ boost::any CsvRecordParser::next(){
             myany = CsvRecord(isNull);
         }
         else if (schema_[rowIndex_].second == "logical") {
-            myany = CsvRecord(isNull, static_cast<bool>(atoll(row_[rowIndex_].c_str())));
+            bool boolCell;
+            std::string stringCell = row_[rowIndex_];
+            std::transform(stringCell.begin(), stringCell.end(), stringCell.begin(), ::tolower);
+            if (stringCell == "true") {
+                boolCell = true;
+            } else if (stringCell == "false") {
+                boolCell = false;
+            } else {
+                boolCell = static_cast<bool>(atoll(row_[rowIndex_].c_str()));
+            }
+            myany = CsvRecord(isNull, boolCell);
         }
         else if (schema_[rowIndex_].second == "integer") {
             myany = CsvRecord(isNull, (int32_t)atoi(row_[rowIndex_].c_str()));
