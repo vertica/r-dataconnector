@@ -1,4 +1,4 @@
-Package: hdfsconnector
+Package: dataconnector
 Type: Package
 Title: Read CSV and ORC files from HDFS or the local file system.
 Version: 1.2.0

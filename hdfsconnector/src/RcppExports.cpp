@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // ddc_write
 SEXP ddc_write(SEXP object, SEXP url, const Rcpp::List& options);
-RcppExport SEXP hdfsconnector_ddc_write(SEXP objectSEXP, SEXP urlSEXP, SEXP optionsSEXP) {
+RcppExport SEXP dataconnector_ddc_write(SEXP objectSEXP, SEXP urlSEXP, SEXP optionsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -20,7 +20,7 @@ END_RCPP
 }
 // schema2colnames
 std::vector<std::string> schema2colnames(const std::string& schema);
-RcppExport SEXP hdfsconnector_schema2colnames(SEXP schemaSEXP) {
+RcppExport SEXP dataconnector_schema2colnames(SEXP schemaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -31,7 +31,7 @@ END_RCPP
 }
 // orccolnames
 std::vector<std::string> orccolnames(const std::string& url, const std::string& hdfsConfigurationFile);
-RcppExport SEXP hdfsconnector_orccolnames(SEXP urlSEXP, SEXP hdfsConfigurationFileSEXP) {
+RcppExport SEXP dataconnector_orccolnames(SEXP urlSEXP, SEXP hdfsConfigurationFileSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -43,7 +43,7 @@ END_RCPP
 }
 // ddc_read
 Rcpp::DataFrame ddc_read(const std::string& url, const Rcpp::List& options);
-RcppExport SEXP hdfsconnector_ddc_read(SEXP urlSEXP, SEXP optionsSEXP) {
+RcppExport SEXP dataconnector_ddc_read(SEXP urlSEXP, SEXP optionsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -55,7 +55,7 @@ END_RCPP
 }
 // create_plan
 Rcpp::List create_plan(const std::string& url, const Rcpp::List& options, const Rcpp::List& workerMapR);
-RcppExport SEXP hdfsconnector_create_plan(SEXP urlSEXP, SEXP optionsSEXP, SEXP workerMapRSEXP) {
+RcppExport SEXP dataconnector_create_plan(SEXP urlSEXP, SEXP optionsSEXP, SEXP workerMapRSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;

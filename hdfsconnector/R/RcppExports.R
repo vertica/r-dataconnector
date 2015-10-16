@@ -2,22 +2,22 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 ddc_write <- function(object, url, options) {
-    .Call('hdfsconnector_ddc_write', PACKAGE = 'hdfsconnector', object, url, options)
+    .Call('dataconnector_ddc_write', PACKAGE = 'dataconnector', object, url, options)
 }
 
 schema2colnames <- function(schema) {
-    .Call('hdfsconnector_schema2colnames', PACKAGE = 'hdfsconnector', schema)
+    .Call('dataconnector_schema2colnames', PACKAGE = 'dataconnector', schema)
 }
 
 orccolnames <- function(url, hdfsConfigurationFile) {
-    .Call('hdfsconnector_orccolnames', PACKAGE = 'hdfsconnector', url, hdfsConfigurationFile)
+    .Call('dataconnector_orccolnames', PACKAGE = 'dataconnector', url, hdfsConfigurationFile)
 }
 
 ddc_read <- function(url, options) {
-    .Call('hdfsconnector_ddc_read', PACKAGE = 'hdfsconnector', url, options)
+    .Call('dataconnector_ddc_read', PACKAGE = 'dataconnector', url, options)
 }
 
 create_plan <- function(url, options, workerMapR) {
-    .Call('hdfsconnector_create_plan', PACKAGE = 'hdfsconnector', url, options, workerMapR)
+    .Call('dataconnector_create_plan', PACKAGE = 'dataconnector', url, options, workerMapR)
 }
 

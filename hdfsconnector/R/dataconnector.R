@@ -13,9 +13,9 @@
 #    limitations under the License.
 
 
-#' \pkg{hdfsconnector} allows users to read and write files from HDFS.
+#' \pkg{dataconnector} allows users to read and write files from HDFS.
 #'
-#' \pkg{hdfsconnector} is extensible and new file formats and filesystems can be easily added. So far it supports:
+#' \pkg{dataconnector} is extensible and new file formats and filesystems can be easily added. So far it supports:
 #'
 #' Formats:
 #' \itemize{
@@ -29,7 +29,7 @@
 #' }
 #'
 #' @docType package
-#' @name hdfsconnector
+#' @name dataconnector
 NULL
 
 #' Load a CSV file into a data frame.
@@ -60,7 +60,7 @@ NULL
 #'                }
 #' @param delimiter Column separator. Example: delimiter='|'. By default delimiter is ','.
 #' @param commentCharacter Discard lines starting with this character. Leading spaces are ignored.
-#' @param hdfsConfigurationFile By default: \code{paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')}.
+#' @param hdfsConfigurationFile By default: \code{paste(system.file(package='dataconnector'),'/conf/hdfs.json',sep='')}.
 #'
 #'                              Options are:
 #'                              \itemize{
@@ -86,10 +86,10 @@ NULL
 #' @param skipHeader Treat first line as the CSV header and discard it.
 #' @return A dataframe representing the CSV file.
 #' @examples
-#' df <- csv2dataframe(url=paste(system.file(package='hdfsconnector'),'/tests/testthat/data/csv/ex001.csv',sep=''), schema='a:int64,b:string')
+#' df <- csv2dataframe(url=paste(system.file(package='dataconnector'),'/tests/testthat/data/csv/ex001.csv',sep=''), schema='a:int64,b:string')
 
 csv2dataframe <- function(url, schema, delimiter=',', commentCharacter='#',
-                          hdfsConfigurationFile=paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep=''),
+                          hdfsConfigurationFile=paste(system.file(package='dataconnector'),'/conf/hdfs.json',sep=''),
                           hdfsConfigurationStr='',
                           chunkStart=0, chunkEnd=-1,
                           skipHeader=FALSE) {
@@ -107,7 +107,7 @@ csv2dataframe <- function(url, schema, delimiter=',', commentCharacter='#',
 
 #    if(!("hdfsConfigurationFile" %in% names(options))) {
 #        # set default hdfsConfigurationFile
-#        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
+#        options["hdfsConfigurationFile"] = paste(system.file(package='dataconnector'),'/conf/hdfs.json',sep='')
 #    }
 
     tmpfilename <- ''
@@ -155,7 +155,7 @@ csv2dataframe <- function(url, schema, delimiter=',', commentCharacter='#',
 #'
 #' @param url File URL. Examples: '/tmp/file.orc', 'hdfs:///file.orc'.
 #' @param selectStripes ORC stripes to include. Stripes need to be consecutive.
-#' @param hdfsConfigurationFile By default: \code{paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')}.
+#' @param hdfsConfigurationFile By default: \code{paste(system.file(package='dataconnector'),'/conf/hdfs.json',sep='')}.
 #'
 #'                              Options are:
 #'                              \itemize{
@@ -177,10 +177,10 @@ csv2dataframe <- function(url, schema, delimiter=',', commentCharacter='#',
 #'                             Normally users specify hdfsConfigurationFile instead of hdfsConfigurationStr.
 #' @return A dataframe representing the ORC file.
 #' @examples
-#' df <- orc2dataframe(url=paste(system.file(package='hdfsconnector'),'/tests/testthat/data/orc/TestOrcFile.test1.orc',sep=''))
+#' df <- orc2dataframe(url=paste(system.file(package='dataconnector'),'/tests/testthat/data/orc/TestOrcFile.test1.orc',sep=''))
 
 orc2dataframe <- function(url, selectedStripes='',
-                          hdfsConfigurationFile=paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep=''),
+                          hdfsConfigurationFile=paste(system.file(package='dataconnector'),'/conf/hdfs.json',sep=''),
                           hdfsConfigurationStr='' ) {
     options = list()
     options['selectedStripes'] = selectedStripes
@@ -191,7 +191,7 @@ orc2dataframe <- function(url, selectedStripes='',
 
 #    if(!("hdfsConfigurationFile" %in% names(options))) {
 #        # set default hdfsConfigurationFile
-#        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
+#        options["hdfsConfigurationFile"] = paste(system.file(package='dataconnector'),'/conf/hdfs.json',sep='')
 #    }
 
     tmpfilename <- ''
@@ -224,7 +224,7 @@ orc2dataframe <- function(url, selectedStripes='',
 #'
 #'                      We also support globbing. Examples: '/tmp/*.orc', 'hdfs:///tmp/*.orc'.
 #' @param overwrite Overwrite file if it exists.
-#' @param hdfsConfigurationFile By default: \code{paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')}.
+#' @param hdfsConfigurationFile By default: \code{paste(system.file(package='dataconnector'),'/conf/hdfs.json',sep='')}.
 #'
 #'                              Options are:
 #'                              \itemize{
@@ -249,7 +249,7 @@ orc2dataframe <- function(url, selectedStripes='',
 #' str <- "hello world"; object2hdfs(str, '/tmp/file.txt')
 
 object2hdfs <- function(object, url, overwrite=FALSE,
-                        hdfsConfigurationFile=paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep=''),
+                        hdfsConfigurationFile=paste(system.file(package='dataconnector'),'/conf/hdfs.json',sep=''),
                         hdfsConfigurationStr='') {
     options = list()
     options['overwrite'] = overwrite
@@ -260,7 +260,7 @@ object2hdfs <- function(object, url, overwrite=FALSE,
 
 #    if(!("hdfsConfigurationFile" %in% names(options))) {
 #        # set default hdfsConfigurationFile
-#        options["hdfsConfigurationFile"] = paste(system.file(package='hdfsconnector'),'/conf/hdfs.json',sep='')
+#        options["hdfsConfigurationFile"] = paste(system.file(package='dataconnector'),'/conf/hdfs.json',sep='')
 #    }
 
     tmpfilename <- ''
