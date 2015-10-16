@@ -149,7 +149,11 @@ Plan ChunkScheduler::schedule() {
 
                 base::ConfigurationMap conf;
                 conf["selectedStripes"] = base::utils::to_string(i);
-                conf["url"] = protocol + "://" + f;
+                if (protocol != "") {
+                    conf["url"] = protocol + "://" + f;
+                } else {
+                    conf["url"] = f;
+                }
 
                 configurations.push_back(conf);
             }
@@ -356,7 +360,11 @@ void ChunkScheduler::divide(const uint64_t numExecutors,
             fullProtocol = "";
         }
         else {
-            fullProtocol = protocol + "://";
+            if (protocol != "") {
+                fullProtocol = protocol + "://";
+            } else {
+                fullProtocol = "";
+            }
         }
         base::ConfigurationMap conf;
         conf["chunkStart"] = (it->first).start;
