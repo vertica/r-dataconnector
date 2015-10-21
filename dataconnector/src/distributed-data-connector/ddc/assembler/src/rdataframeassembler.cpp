@@ -934,12 +934,14 @@ boost::any RDataFrameAssembler::getObject()
         }
         UNPROTECT(columns_.size());  // this also accounts for the creation of list-type columns in configureOrc()
         needUnprotect_ = false;
+#if 0
         Rcpp::StringVector rownames(numRows_);
         for(uint64_t i = 0; i < numRows_; ++i) {
             rownames[i] = base::utils::to_string(i+1);
         }
         df->attr("row.names") = rownames;
         df->attr("class") = "data.frame";
+#endif
         return boost::any(df);
     }
     else {
