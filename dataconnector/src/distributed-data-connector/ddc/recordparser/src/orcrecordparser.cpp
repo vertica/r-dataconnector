@@ -518,8 +518,8 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             break;
         }
         case orc::DECIMAL: {
-            int32_t scale = ((orc::Decimal64VectorBatch *)column)->precision;
-            int32_t precision = ((orc::Decimal64VectorBatch *)column)->scale;
+            int32_t scale = ((orc::Decimal64VectorBatch *)column)->scale;
+            int32_t precision = ((orc::Decimal64VectorBatch *)column)->precision;
             int64_t* buffer = ((orc::Decimal64VectorBatch *)column)->values.data();
             if(nestedLevel == 0) {
                 record->type = kind;
@@ -528,8 +528,9 @@ void OrcRecordParser::getRecord(orc::ColumnVectorBatch* column,
             else {
                 assert(parent);
                 NodePtr node1(new Node); node1->type = kind;
-                node1->value = (column->hasNulls && !column->notNull[rowId]) ? 0 :
-                                   orc::toDecimalString(buffer[rowId], scale); (column->hasNulls && !column->notNull[rowId]);
+                node1->isNull = (column->hasNulls && !column->notNull[rowId]);
+                node1->value = record->isNull ? std::string("") :
+                                   orc::toDecimalString(buffer[rowId], scale);
                 switch(parent->type) {
                     case orc::MAP: {
                         NodePtr key(new Node); key->type = orc::STRING; key->value = "key";
