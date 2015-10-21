@@ -934,14 +934,12 @@ boost::any RDataFrameAssembler::getObject()
         }
         UNPROTECT(columns_.size());  // this also accounts for the creation of list-type columns in configureOrc()
         needUnprotect_ = false;
-#if 0
         Rcpp::StringVector rownames(numRows_);
         for(uint64_t i = 0; i < numRows_; ++i) {
             rownames[i] = base::utils::to_string(i+1);
         }
         df->attr("row.names") = rownames;
         df->attr("class") = "data.frame";
-#endif
         return boost::any(df);
     }
     else {
@@ -1086,6 +1084,12 @@ boost::any RDataFrameAssembler::getObject()
             col += 1;
         }
         UNPROTECT(vectors.size());
+        Rcpp::StringVector rownames(numRows_ + 1);  // +1 because last row doesn't call update()
+        for(uint64_t i = 0; i < numRows_ + 1; ++i) {
+            rownames[i] = base::utils::to_string(i+1);
+        }
+        df->attr("row.names") = rownames;
+        df->attr("class") = "data.frame";
         return boost::any(df);
     }
 }
@@ -1191,6 +1195,7 @@ void RDataFrameAssembler::update(int32_t level)
         DLOG_IF(INFO, splitsAssembled_ < 10) << "split completed, resetting index!";
         ++splitsAssembled_;
         if(format_ == "row") {
+            ++numRows_;
             colIndex_ = 0;
         }
         else if(format_ == "column") {
