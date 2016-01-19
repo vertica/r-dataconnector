@@ -186,7 +186,9 @@ static base::ConfigurationMap list2conf(const Rcpp::List& options) {
         boost::split(selectedStripesStrings, selectedStripesStr, boost::is_any_of(","));
         std::vector<uint64_t> selectedStripes;
         for(int i = 0; i < selectedStripesStrings.size(); ++i) {
-            selectedStripes.push_back((uint64_t)atoll(selectedStripesStrings[i].c_str()));
+            if (selectedStripesStrings[i] != "") {
+                selectedStripes.push_back((uint64_t)atoll(selectedStripesStrings[i].c_str()));
+            }
         }
         conf["selectedStripes"] = selectedStripes;
     }
