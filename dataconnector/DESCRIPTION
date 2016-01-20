@@ -7,6 +7,15 @@ Author: HP Vertica Analytics Team
 Maintainer: HP Vertica Analytics Team <distributedRTeam@external.groups.hp.com> 
 Description: Read CSV and ORC files from HDFS or the local file system. Supports writing R objects to HDFS as well.
 License: GPL (>= 2)
-Imports: Rcpp (>= 0.11.5)
-LinkingTo: Rcpp
+SystemRequirements: boost (>= 1.58), 
+  curl-devel, 
+  openssl-devel,
+  cmake, 
+  zlib, 
+  xz
+Imports: Rcpp (>= 0.11.5), 
+  BH (>= 1.58),
+  RInside (>= 0.2.13)
+LinkingTo: Rcpp, 
+  BH
 Suggests: testthat
