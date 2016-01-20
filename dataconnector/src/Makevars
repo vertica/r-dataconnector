@@ -8,5 +8,4 @@ bootstrap:
 	(cd distributed-data-connector/ddc/; make)
 
 PKG_CPPFLAGS = -Idistributed-data-connector/ddc/third-party/install/include -fPIC $(R_CXXFLAGS) -std=c++0x
-PKG_LIBS = -Ldistributed-data-connector/ddc/third-party/install/lib -lddc_s -lhdfsutils_s -lbase_s -lwebhdfs_s -lddcmaster_s -lorc_s -lcurl -lglog -lyajl -lgmock -lprotobuf -lssl -lcrypto -lsnappy -lz -lgtest -lpthread -lboost_thread-mt -lboost_system
-# -ltcmalloc -lunwind
+PKG_LIBS = -Ldistributed-data-connector/ddc/third-party/install/lib -lddc_s -lhdfsutils_s -lbase_s -lwebhdfs_s -lddcmaster_s -lorc_s -lcurl -lglog -lyajl -lgmock -lprotobuf -lssl -lcrypto -lsnappy -lz -lgtest -lpthread -lboost_thread -lboost_system
