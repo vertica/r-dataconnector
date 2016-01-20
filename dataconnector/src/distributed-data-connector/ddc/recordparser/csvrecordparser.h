@@ -26,6 +26,7 @@
 #include "irecordparser.h"
 #include "splitproducer/split.h"
 #include "text/csv/rows.hpp"
+#include <libgen.h>
 
 namespace ddc {
 namespace recordparser {
