@@ -5,7 +5,7 @@ PROTOBUF_VERSION=2.6.1
 INSTALLDIR=$(abspath install)
 NCORES=$(shell getconf _NPROCESSORS_ONLN)
 
-all: yajl gtest gmock glog gflags unwind lzma zmq protobuf snappy
+all: yajl gtest gmock glog gflags zmq snappy protobuf
 #all: boost yajl curl openssl gtest gmock glog gflags z unwind lzma zmq protobuf snappy 
 #tcmalloc
 
@@ -88,7 +88,7 @@ $(INSTALLDIR)/lib/libz.a:
 unwind:  $(INSTALLDIR)/lib/libunwind.a
 $(INSTALLDIR)/lib/libunwind.a:  $(INSTALLDIR)/lib/liblzma.a
 	tar -zxf libunwind-1.1.tar.gz
-	cd libunwind-1.1; CFLAGS="-fPIC -I$(INSTALLDIR)/include" CXXFLAGS="-fPIC -I$(INSTALLDIR)/include" LDFLAGS="-fPIC -L$(INSTALLDIR)/lib" ./configure  --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make -j$(NCORES)  && make install
+	cd libunwind-1.1; CFLAGS="-fPIC -I$(INSTALLDIR)/include" CXXFLAGS="-fPIC -I$(INSTALLDIR)/include" LDFLAGS="-fPIC -L$(INSTALLDIR)/lib" CPPFLAGS="-D_XOPEN_SOURCE=600" ./configure  --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make -j$(NCORES)  && make install
 
 lzma:  $(INSTALLDIR)/lib/liblzma.a
 $(INSTALLDIR)/lib/liblzma.a:
@@ -102,21 +102,20 @@ $(INSTALLDIR)/lib/liblzma.a:
 
 clean: 
 	rm -rf $(INSTALLDIR)
-	rm -rf protobuf-2.5.0/
 	rm -rf zeromq-4.0.4
 	rm -rf libxml2-2.9.1
 	rm -rf lloyd-yajl-66cb08c
 	rm -rf gflags-2.1.2
-	rm -rf libunwind-1.1
 	rm -rf glog-0.3.4
 	rm -rf gtest-1.7.0
-	rm -rf protobuf-2.6.1
-	rm -rf zeromq-4.1.2
+	rm -rf zeromq-$(ZMQ_VERSION)/
 	rm -rf gmock-1.7.0
-	rm -rf xz-5.2.1
 	rm -rf libuuid-1.0.3
 	rm -rf snappy-1.1.1
+	rm -rf protobuf-$(PROTOBUF_VERSION)/
 	
+#	rm -rf xz-5.2.1
+#	rm -rf libunwind-1.1
 #	rm -rf zlib-1.2.8
 #	rm -rf boost_$(BOOST_VERSION)/
 #	rm -rf gperftools-2.4
