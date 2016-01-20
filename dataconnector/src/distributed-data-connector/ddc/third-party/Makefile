@@ -5,7 +5,8 @@ PROTOBUF_VERSION=2.6.1
 INSTALLDIR=$(abspath install)
 NCORES=$(shell getconf _NPROCESSORS_ONLN)
 
-all: boost yajl curl openssl gtest gmock glog gflags z unwind lzma zmq protobuf snappy 
+all: yajl gtest gmock glog gflags unwind lzma zmq protobuf snappy
+#all: boost yajl curl openssl gtest gmock glog gflags z unwind lzma zmq protobuf snappy 
 #tcmalloc
 
 boost: $(INSTALLDIR)/lib/libboost_chrono.a $(INSTALLDIR)/lib/libboost_date_time.a $(INSTALLDIR)/lib/libboost_filesystem.a  $(INSTALLDIR)/lib/libboost_system.a $(INSTALLDIR)/lib/libboost_thread.a
@@ -41,7 +42,7 @@ $(INSTALLDIR)/lib/libuuid.a:
 	cd libuuid-1.0.3; CFLAGS=-fPIC CXXFLAGS=-fPIC LDFLAGS=-fPIC ./configure  --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make -j$(NCORES) && make install
 
 yajl:  $(INSTALLDIR)/lib/libyajl.a
- $(INSTALLDIR)/lib/libyajl.a: $(INSTALLDIR)/bin/cmake
+ $(INSTALLDIR)/lib/libyajl.a:
 	mkdir -p $(INSTALLDIR)/include
 	tar -zxf yajl-2.1.0.tar.gz
 	cd lloyd-yajl-66cb08c; CFLAGS=-fPIC CXXFLAGS=-fPIC LDFLAGS=-fPIC PATH=$(INSTALLDIR)/bin:$(PATH) ./configure  --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make -j$(NCORES); cp -r ./build/yajl-2.1.0/include/yajl $(INSTALLDIR)/include; cp build/yajl-2.1.0/lib/libyajl_s.a $(INSTALLDIR)/lib/libyajl.a
@@ -58,25 +59,25 @@ $(INSTALLDIR)/lib/libssl.a:
 
 gtest:  $(INSTALLDIR)/lib/libgtest.a
 $(INSTALLDIR)/lib/libgtest.a:  
-	tar xf gtest-1.6.0.tar.gz
-	cd gtest-1.6.0; CFLAGS=-fPIC CXXFLAGS=-fPIC LDFLAGS=-fPIC ./configure --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make  && cp lib/.libs/libgtest.a $(INSTALLDIR)/lib/; cp -rf include/* $(INSTALLDIR)/include/
+	tar xf gtest-1.7.0.tar.gz
+	cd gtest-1.7.0; CFLAGS=-fPIC CXXFLAGS=-fPIC LDFLAGS=-fPIC ./configure --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make  && cp lib/.libs/libgtest.a $(INSTALLDIR)/lib/; cp -rf include/* $(INSTALLDIR)/include/
 
 gmock:  $(INSTALLDIR)/lib/libgmock.a
 $(INSTALLDIR)/lib/libgmock.a:
-	tar xf gmock-1.6.0.tar.gz
-	cd gmock-1.6.0; CFLAGS=-fPIC CXXFLAGS=-fPIC LDFLAGS=-fPIC ./configure --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make  && cp lib/.libs/libgmock.a $(INSTALLDIR)/lib/; cp -rf include/* $(INSTALLDIR)/include/
+	tar xf gmock-1.7.0.tar.gz
+	cd gmock-1.7.0; CFLAGS=-fPIC CXXFLAGS=-fPIC LDFLAGS=-fPIC ./configure --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make  && cp lib/.libs/libgmock.a $(INSTALLDIR)/lib/; cp -rf include/* $(INSTALLDIR)/include/
 
 
 glog:  $(INSTALLDIR)/lib/libglog.a 
 $(INSTALLDIR)/lib/libglog.a:  $(INSTALLDIR)/lib/libgflags.a
-	tar -zxf glog-0.3.3.tar.gz
-	cd glog-0.3.3; CFLAGS=-fPIC CXXFLAGS=-fPIC LDFLAGS=-fPIC ./configure --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make  && make install
+	tar -zxf glog-0.3.4.tar.gz
+	cd glog-0.3.4; CFLAGS=-fPIC CXXFLAGS=-fPIC LDFLAGS=-fPIC ./configure --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make  && make install
 
 gflags:  $(INSTALLDIR)/lib/libgflags.a
-$(INSTALLDIR)/lib/libgflags.a:  $(INSTALLDIR)/bin/cmake
+$(INSTALLDIR)/lib/libgflags.a:
 	tar -zxf gflags-2.1.2.tar.gz
 	mkdir -p gflags-2.1.2/Release
-	cd gflags-2.1.2/Release; $(INSTALLDIR)/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" .. && make -j$(NCORES)  && cp -r include/gflags $(INSTALLDIR)/include && cp lib/libgflags.a $(INSTALLDIR)/lib
+	cd gflags-2.1.2/Release; cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC" .. && make -j$(NCORES)  && cp -r include/gflags $(INSTALLDIR)/include && cp lib/libgflags.a $(INSTALLDIR)/lib
 
 
 z:  $(INSTALLDIR)/lib/libz.a
@@ -94,11 +95,6 @@ $(INSTALLDIR)/lib/liblzma.a:
 	tar -zxf xz-5.2.1.tar.gz
 	cd xz-5.2.1; CFLAGS=-fPIC CXXFLAGS=-fPIC LDFLAGS=-fPIC ./configure  --enable-static --enable-shared=no --prefix=$(INSTALLDIR) && make -j$(NCORES)  && make install
 
-cmake: $(INSTALLDIR)/bin/cmake
-$(INSTALLDIR)/bin/cmake:
-	tar -zxf cmake-3.2.3.tar.gz
-	cd cmake-3.2.3; ./configure  --prefix=$(INSTALLDIR) && make -j$(NCORES)  && make -j$(NCORES) install
-
 #tcmalloc:$(INSTALLDIR)/lib/libtcmalloc.a
 #$(INSTALLDIR)/lib/libtcmalloc.a: $(INSTALLDIR)/lib/libunwind.a
 #	tar -zxf gperftools-2.4.tar.gz
@@ -106,26 +102,26 @@ $(INSTALLDIR)/bin/cmake:
 
 clean: 
 	rm -rf $(INSTALLDIR)
-	rm -rf boost_$(BOOST_VERSION)/
 	rm -rf protobuf-2.5.0/
 	rm -rf zeromq-4.0.4
 	rm -rf libxml2-2.9.1
-	rm -rf openssl-1.0.2c
-	rm -rf curl-7.43.0
 	rm -rf lloyd-yajl-66cb08c
 	rm -rf gflags-2.1.2
-	rm -rf zlib-1.2.8
 	rm -rf libunwind-1.1
-	rm -rf xz-5.2.1
-	rm -rf cmake-3.2.3
-	rm -rf glog-0.3.3
+	rm -rf glog-0.3.4
 	rm -rf gtest-1.7.0
-	rm -rf snappy-1.1.1
 	rm -rf protobuf-2.6.1
 	rm -rf zeromq-4.1.2
-	rm -rf libuuid-1.0.3
 	rm -rf gmock-1.7.0
-
+	rm -rf xz-5.2.1
+	rm -rf libuuid-1.0.3
+	rm -rf snappy-1.1.1
+	
+#	rm -rf zlib-1.2.8
+#	rm -rf boost_$(BOOST_VERSION)/
 #	rm -rf gperftools-2.4
+#	rm -rf cmake-3.2.3
+#	rm -rf openssl-1.0.2c
+#	rm -rf curl-7.43.0
 
 
