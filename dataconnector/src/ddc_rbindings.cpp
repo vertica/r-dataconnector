@@ -14,6 +14,8 @@
    limitations under the License.
 */
 
+// for complillation on OS X
+#define _XOPEN_SOURCE 600
 
 #include <stdint.h>
 
